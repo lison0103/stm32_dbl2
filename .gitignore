@@ -1,0 +1,16 @@
+*.bin
+*.out
+*.o
+*.hex
+*.pbi*
+*.sim
+*.pbd*
+*.dep
+*.tmp
+*.wsdt
+*.map
+*dbgdt
+*dni
+*.lst
+*.cspy.bat
+*.wspos

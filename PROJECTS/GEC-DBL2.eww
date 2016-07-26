@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\GEC-DBL2.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>GEC-DBL2</name>
+      <member>
+        <project>GEC-DBL2</project>
+        <configuration>GEC-DBL2-M</configuration>
+      </member>
+      <member>
+        <project>GEC-DBL2</project>
+        <configuration>GEC-DBL2-S</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
+
+
