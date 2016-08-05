@@ -77,7 +77,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.40.6.9815</state>
+          <state>7.40.7.9864</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1047,7 +1047,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.40.6.9815</state>
+          <state>7.40.7.9864</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1291,6 +1291,8 @@
           <state>$PROJ_DIR$\..\HARDWARE\EWDT</state>
           <state>$PROJ_DIR$\..\HARDWARE\SPI</state>
           <state>$PROJ_DIR$\..\HARDWARE\TIMER</state>
+          <state>$PROJ_DIR$\..\HARDWARE\CAN</state>
+          <state>$PROJ_DIR$\..\HARDWARE\ADC</state>
           <state>$PROJ_DIR$\..\SAFETYTEST\SelfTestLib</state>
           <state>$PROJ_DIR$\..\SAFETYTEST\</state>
           <state>$PROJ_DIR$\..\ESC\inc</state>
@@ -1978,7 +1980,7 @@
     <file>
       <name>$PROJ_DIR$\..\ESC\src\esc_comm_safety.c</name>
       <excluded>
-        <configuration>GEC-DBL2-S</configuration>
+        <configuration>GEC-DBL2-M</configuration>
       </excluded>
     </file>
     <file>
@@ -2044,6 +2046,9 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_can.c</name>
+        <excluded>
+          <configuration>GEC-DBL2-M</configuration>
+        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Libraries\STM32F10x_StdPeriph_Driver\src\stm32f10x_cec.c</name>
@@ -2137,15 +2142,9 @@
       </excluded>
       <file>
         <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_adc.c</name>
-        <excluded>
-          <configuration>GEC-DBL2-S</configuration>
-        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_can.c</name>
-        <excluded>
-          <configuration>GEC-DBL2-S</configuration>
-        </excluded>
       </file>
       <file>
         <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_comp.c</name>
@@ -2245,9 +2244,15 @@
   <group>
     <name>HARDWARE</name>
     <file>
+      <name>$PROJ_DIR$\..\HARDWARE\ADC\adc.c</name>
+      <excluded>
+        <configuration>GEC-DBL2-M</configuration>
+      </excluded>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\HARDWARE\CAN\can.c</name>
       <excluded>
-        <configuration>GEC-DBL2-S</configuration>
+        <configuration>GEC-DBL2-M</configuration>
       </excluded>
     </file>
     <file>

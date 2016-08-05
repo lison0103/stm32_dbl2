@@ -16,7 +16,6 @@
 #include "esc_comm_dualcpu.h"
 #include "esc_comm_safety.h"
 
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -59,7 +58,7 @@ void LED_indicator(void)
 	if(led_idr_cnt >= 100)   
 	{
             led_idr_cnt = 0;
-            LED_FLASH();       
+            LED_FLASH();  
 	}   
 }
 
@@ -87,8 +86,18 @@ void Task_Loop(void)
       Safety_RunCheck2();
 #endif  
       
-
+#ifdef GEC_DBL2_MASTER  
+      if( testmode == 1 )
+      {
+          EscRTBuff[0] = ReadSwDp();
+      }
+#endif
+      
       Get_GpioInput(&EscRTBuff[4]);
+#ifdef GEC_DBL2_SLAVE      
+      output_driver(&EscRTBuff[30]);
+#endif
+
       
       /*  ESC  */
       if( testmode == 0 )
@@ -105,7 +114,7 @@ void Task_Loop(void)
       if( Tms20Counter == 0 )
       {                
           Communication_CPU();
-          Communication_To_Safety();  
+           
       }  
 #else
       if( Tms10Counter == 0 )
@@ -114,7 +123,7 @@ void Task_Loop(void)
       }
       if( Tms20Counter == 0 )
       {
-
+          Communication_To_Safety(); 
       }       
 #endif     
       
@@ -127,14 +136,16 @@ void Task_Loop(void)
       
       if( Tms100Counter == 0 )
       {   
-#ifdef GEC_DBL2_MASTER 
-          CAN1_TX_Data[2] = SW_SPDT_KEY;
+#ifdef GEC_DBL2_SLAVE
+          CAN1_TX_Data[3] = Get_Adc_Average();
 #endif
       }
            
       if( Tms500Counter == 0 )
-      {             
+      {    
+#ifdef GEC_DBL2_SLAVE
           Input_Check();
+#endif
       }
       
       if( Tms1000Counter == 0 )
@@ -156,6 +167,11 @@ void Task_Loop(void)
 int main(void)
 {        
 
+    u16 i; 
+    
+    /* Power up delay */
+    for( i = 0; i < 10000; i++ );
+    
     /** hardware init **/
     Initial_Device();    
     

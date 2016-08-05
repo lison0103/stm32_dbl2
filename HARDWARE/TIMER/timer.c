@@ -378,7 +378,7 @@ void TIM4_IRQHandler(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-#ifdef GEC_DBL2_MASTER
+
 void TIM3_IRQHandler(void)   
 {
       if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) 
@@ -389,18 +389,18 @@ void TIM3_IRQHandler(void)
           count++;
           if(count == 17)
           {
-              PLUSE_OUT_SET();
+//              PLUSE_OUT_SET();
           }
           
           if(count == 25)
           {
-              PLUSE_OUT_CLR();
+//              PLUSE_OUT_CLR();
               count = 0;
           } 
         
       }
 }
-#endif
+
 
 
 

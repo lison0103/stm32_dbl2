@@ -60,24 +60,16 @@ extern u8 CAN1_TX_Data[canbuffsize];
 extern u8 CAN1_RX_Data[canbuffsize];
 extern u8 CAN1_TX2_Data[canbuffsize];
 extern u8 CAN1_RX2_Data[canbuffsize];
-/* CAN2 */
-extern u8 CAN2_TX_Data[canbuffsize];
-extern u8 CAN2_RX_Data[canbuffsize];
-extern u8 CAN2_TX2_Data[canbuffsize];
-extern u8 CAN2_RX2_Data[canbuffsize];
+
 
 extern u8 can1_receive;
-extern u8 can2_receive;
 
 
 extern CAN_TX_DATA_PROCESS_TypeDef  CAN1_TX_Normal;
 extern CAN_TX_DATA_PROCESS_TypeDef  CAN1_TX_Urge;
-extern CAN_TX_DATA_PROCESS_TypeDef  CAN2_TX_Up;
-extern CAN_TX_DATA_PROCESS_TypeDef  CAN2_TX_Down;
 
 extern CAN_RX_DATA_PROCESS_TypeDef  CAN1_RX_Normal;
-extern CAN_RX_DATA_PROCESS_TypeDef  CAN2_RX_Up;
-extern CAN_RX_DATA_PROCESS_TypeDef  CAN2_RX_Down;
+
 				
 #endif  /* __CAN_H */
 

@@ -2310,6 +2310,9 @@
   <group>
     <name>HARDWARE</name>
     <file>
+      <name>$PROJ_DIR$\..\HARDWARE\ADC\adc.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\HARDWARE\CAN\can.c</name>
     </file>
     <file>

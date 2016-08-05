@@ -75,16 +75,19 @@ u8 CAN_Int_Init(CAN_TypeDef* CANx)
     
     if(CANx == CAN1)
     {
+
+        /* Connect CAN pins to AF9 */
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_9);
+        GPIO_PinAFConfig(GPIOA, GPIO_PinSource12, GPIO_AF_9); 
         
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+        /* Configure CAN RX and TX pins */
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | GPIO_Pin_12;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	
-        GPIO_Init(GPIOA, &GPIO_InitStructure);			
-        
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;	
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
         GPIO_Init(GPIOA, &GPIO_InitStructure);
-        
+                   
         
         CAN_DeInit(CANx);
         CAN_StructInit(&CAN_InitStructure);

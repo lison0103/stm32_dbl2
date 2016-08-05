@@ -19,7 +19,9 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+#ifdef GEC_DBL2_SLAVE
 void Input_Check(void);
+#endif
 void CrossCommCPUCheck(void);
 void HardwareTEST(void);
 

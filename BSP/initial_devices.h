@@ -20,8 +20,9 @@
 #include "ewdt.h"
 #include "timer.h"
 #include "safety_test.h"
-#ifdef GEC_DBL2_MASTER  
+#ifdef GEC_DBL2_SLAVE 
 #include "can.h"
+#include "adc.h"
 #endif
 
 

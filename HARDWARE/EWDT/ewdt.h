@@ -17,11 +17,10 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
-#ifdef GEC_SF_MASTER
-#define EWDT_TOOGLE() 	GPIOA->ODR ^= 0X0002
-#define EWDT_ON     PAout(1)
-#else
+#ifdef GEC_DBL2_MASTER
 #define EWDT_TOOGLE() 	GPIOA->ODR ^= 0X0001
+#else
+#define EWDT_TOOGLE() 	GPIOC->ODR ^= 0X0004
 #endif
 
 /* Exported functions ------------------------------------------------------- */

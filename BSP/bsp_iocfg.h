@@ -25,70 +25,52 @@ void Input_Output_PinInit(void);
 
 #ifdef GEC_DBL2_MASTER
 
-//OUTPUT
-#define AUX_CTR_SET()    		GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_SET)
-#define AUX_CTR_CLR()    	GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_RESET)
-#define SF_RL_CTR_SET()    		GPIO_WriteBit(GPIOE, GPIO_Pin_2, Bit_SET)
-#define SF_RL_CTR_CLR()    	GPIO_WriteBit(GPIOE, GPIO_Pin_2, Bit_RESET)
-
-#define SF_RELAY_ON()    		GPIO_WriteBit(GPIOE, GPIO_Pin_2, Bit_SET)
-#define SF_RELAY_OFF()    	GPIO_WriteBit(GPIOE, GPIO_Pin_2, Bit_RESET)
-#define AUX_RELAY_ON()   		GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_SET)
-#define AUX_RELAY_OFF()    	GPIO_WriteBit(GPIOC, GPIO_Pin_0, Bit_RESET)
-
-#define SF_RL_WDT_SET()   		GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_SET)
-#define SF_RL_WDT_CLR()    	GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET)
-
-
-//FEEDBACK
-#define SF_RL_DRV_FB   GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_3)
-#define SF_PWR_FB_CPU   GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_8)
-#define SF_RL_FB       GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_2)
-
-#define SF_RL2_FB_CPU1       GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
-
-#define AUX_FB       GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_1)
-
-//PLUSE
-#define PLUSE_OUT_SET()                 GPIO_WriteBit(GPIOA, GPIO_Pin_10, Bit_SET)
-#define PLUSE_OUT_CLR()       GPIO_WriteBit(GPIOA, GPIO_Pin_10, Bit_RESET)
-
-//EWDT
-#define SF_EWDT_TOOGLE() 	GPIOB->ODR ^= 0X0200
-
-
-#define SW_SPDT_KEY       GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_3)
+#define SFSW_C_1_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_SET)
+#define SFSW_C_1_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_RESET)
+#define SFSW_C_2_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_SET)
+#define SFSW_C_2_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_RESET)
+#define SFSW_C_3_SET()                 GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_SET)
+#define SFSW_C_3_CLR()       GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET)
+#define SFSW_C_4_SET()                 GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_SET)
+#define SFSW_C_4_CLR()       GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET)
+#define SFSW_C_5_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_SET)
+#define SFSW_C_5_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_RESET)
 
 #else
 
 
-//OUTPUT
-#define AUX_CTR_SET()    		GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_SET)
-#define AUX_CTR_CLR()    	GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_RESET)
-#define SF_RL_CTR_SET()    		GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_SET)
-#define SF_RL_CTR_CLR()    	GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_RESET)
+/* OUTPUT */
+#define RELAY_OC1_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_8, Bit_SET)
+#define RELAY_OC1_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_8, Bit_RESET)       
+#define RELAY_OC2_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_9, Bit_SET)
+#define RELAY_OC2_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_9, Bit_RESET)
+#define RELAY_OC3_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_10, Bit_SET)
+#define RELAY_OC3_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_10, Bit_RESET)
+#define RELAY_OC4_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_11, Bit_SET)
+#define RELAY_OC4_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_11, Bit_RESET)
+#define RELAY_OC5_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_12, Bit_SET)
+#define RELAY_OC5_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_12, Bit_RESET)
 
-#define SF_RELAY_ON()    		GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_SET)
-#define SF_RELAY_OFF()    	GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_RESET)
-#define AUX_RELAY_ON()   		GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_SET)
-#define AUX_RELAY_OFF()    	GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_RESET)
+#define TRAN_OC1_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_13, Bit_SET)
+#define TRAN_OC1_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_13, Bit_RESET)
+#define TRAN_OC2_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_14, Bit_SET)
+#define TRAN_OC2_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_14, Bit_RESET)
+#define TRAN_OC3_ON()    		GPIO_WriteBit(GPIOD, GPIO_Pin_15, Bit_SET)
+#define TRAN_OC3_OFF()    	GPIO_WriteBit(GPIOD, GPIO_Pin_15, Bit_RESET)
 
-#define SF_RL_WDT_SET()   		GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_SET)
-#define SF_RL_WDT_CLR()    	GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_RESET)
+#define SFSW_C_1_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_SET)
+#define SFSW_C_1_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_3, Bit_RESET)
+#define SFSW_C_2_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_SET)
+#define SFSW_C_2_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_1, Bit_RESET)
+#define SFSW_C_3_SET()                 GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_SET)
+#define SFSW_C_3_CLR()       GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET)
+#define SFSW_C_4_SET()                 GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_SET)
+#define SFSW_C_4_CLR()       GPIO_WriteBit(GPIOB, GPIO_Pin_7, Bit_RESET)
+#define SFSW_C_5_SET()                 GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_SET)
+#define SFSW_C_5_CLR()       GPIO_WriteBit(GPIOE, GPIO_Pin_5, Bit_RESET)
 
-//FEEDBACK
-#define SF_RL_DRV_FB 		GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_2)
-#define SF_PWR_FB_CPU   GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_0)
-#define SF_RL_FB       GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
 
-#define SF_RL1_FB_CPU2       GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_2)
-
-#define AUX_FB       GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_4)
-
-//EWDT
-#define SF_EWDT_TOOGLE() 	GPIOE->ODR ^= 0X0002
-
-#endif  /* GEC_SF_MASTER */
+#endif  /* GEC_DBL2_MASTER */
 
 
 #endif /* __BSP_IOCFG_H */

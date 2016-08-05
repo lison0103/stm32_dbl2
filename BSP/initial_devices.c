@@ -18,6 +18,7 @@
 #include "config_test.h"
 #include "esc.h"
 
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -60,25 +61,32 @@ void Initial_Device(void)
         /** LED init **/
 	LED_Init();
         
+        /* EWDT init */
+        EWDT_Drv_pin_config();
+//        ExtWdtCheck();        
+        
         /** input and relay output init **/
         Input_Output_PinInit();                
         
         /** Data array is initialized to 0 **/
         Data_init();
         
-#ifdef GEC_DBL2_MASTER           
+#ifdef GEC_DBL2_SLAVE           
             
         /** CAN1 init,baud rate 500Kbps **/
-	CAN_Int_Init(CAN1);  
+	CAN_Int_Init(CAN1);     
         
-        /** pluse output init **/
-        PluseOutputInit();
-       
+        /* ADC init, measure the sf_in voltage */
+        Adc_Init();
+        
+#else
+        /* wait for CPU2 */
+        delay_ms(500);
       
-#endif  /* GEC_DBL2_MASTER */
+#endif  
 
         /** spi communication init **/
-        SPI1_Init();
+        SPIx_Init();
         
         /*----------------------------------------------------------------------*/
         /*------------------------- Cross Comm CPU test ------------------------*/
@@ -90,7 +98,8 @@ void Initial_Device(void)
         /* HardwareTest */
         HardwareTEST();        
 
-        
+        /** pluse output init **/
+        PluseOutputInit();        
         
 #if SELF_TEST
         /* Self test routines initialization ---------------------------------------*/
@@ -113,9 +122,12 @@ void Initial_Device(void)
 *******************************************************************************/
 void PluseOutputInit(void)
 {
-  
-    /** TIM init 1000Khz¡ê?counting to 10 is 10us **/
-    TIM3_Int_Init(9,71); 
+    
+    SFSW_C_1_SET();
+    SFSW_C_2_SET();
+    SFSW_C_3_SET();
+    SFSW_C_4_SET();
+    SFSW_C_5_SET();
 
 }
 
@@ -194,6 +206,7 @@ void RCC_Configuration(void)
     
     RCC_APB1PeriphClockCmd( RCC_APB1Periph_CAN1 , ENABLE);    
 
+    RCC_APB2PeriphClockCmd( RCC_APB2Periph_TIM1 , ENABLE);
     RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2
                            |RCC_APB1Periph_TIM4 ,
                             ENABLE); 
@@ -209,15 +222,15 @@ void RCC_Configuration(void)
     
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1 | RCC_AHBPeriph_CRC, ENABLE);
 #else     
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE );
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE );    
     
-    RCC_APB1PeriphClockCmd( RCC_APB1Periph_CAN1 , ENABLE);    
-    
+    RCC_APB2PeriphClockCmd( RCC_APB2Periph_TIM1 , ENABLE);
     RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM2
                            |RCC_APB1Periph_TIM4 ,
                             ENABLE);  
                                         
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_SPI1, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO , ENABLE);
+    RCC_APB1PeriphClockCmd( RCC_APB1Periph_SPI2 , ENABLE);
   
     RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA
                            |RCC_APB2Periph_GPIOB
@@ -229,18 +242,8 @@ void RCC_Configuration(void)
 
     RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1 | RCC_AHBPeriph_CRC, ENABLE); 
 #endif
-    
-#ifdef GEC_DBL2_MASTER
-    RCC_APB1PeriphClockCmd( RCC_APB1Periph_CAN2 , ENABLE);    
-    RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM3 , ENABLE);    
-#endif
-
-#ifdef GEC_DBL2_SLAVE      
-      RCC_APB2PeriphClockCmd( RCC_APB2Periph_TIM1 , ENABLE);
-      RCC_APB2PeriphClockCmd( RCC_APB2Periph_TIM15 , ENABLE);     
-#endif
-      RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM6 , ENABLE); 
-      RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM7 , ENABLE); 
+          
+      
       
     /* Enable CSS */
     RCC_ClockSecuritySystemCmd(ENABLE);

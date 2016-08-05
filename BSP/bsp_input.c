@@ -10,6 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_input.h"
+#include "bsp_iocfg.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -60,164 +61,150 @@ void Get_GpioInput(u8 inBuff[])
 #ifdef GEC_DBL2_MASTER
     
     /* INA1 ~ INA8 */
-    if(ByteAnd[1] & 0x0080) inBuff[0] &= ~0x01; else if(!(ByteOr[1] & 0x0080)) inBuff[0] |= 0x01; 
-    if(ByteAnd[1] & 0x0040) inBuff[0] &= ~0x02; else if(!(ByteOr[1] & 0x0040)) inBuff[0] |= 0x02; 
-    if(ByteAnd[4] & 0x0001) inBuff[0] &= ~0x04; else if(!(ByteOr[4] & 0x0001)) inBuff[0] |= 0x04; 
-    if(ByteAnd[4] & 0x0002) inBuff[0] &= ~0x08; else if(!(ByteOr[4] & 0x0002)) inBuff[0] |= 0x08; 
-    if(ByteAnd[1] & 0x0020) inBuff[0] &= ~0x10; else if(!(ByteOr[1] & 0x0020)) inBuff[0] |= 0x10; 
-    if(ByteAnd[1] & 0x0010) inBuff[0] &= ~0x20; else if(!(ByteOr[1] & 0x0010)) inBuff[0] |= 0x20; 
-    if(ByteAnd[1] & 0x0008) inBuff[0] &= ~0x40; else if(!(ByteOr[1] & 0x0008)) inBuff[0] |= 0x40; 
-    if(ByteAnd[3] & 0x0004) inBuff[0] &= ~0x80; else if(!(ByteOr[3] & 0x0004)) inBuff[0] |= 0x80; 
+    if(ByteAnd[1] & 0x0040) inBuff[0] |= 0x01; else if(!(ByteOr[1] & 0x0040)) inBuff[0] &= ~0x01; 
+    if(ByteAnd[1] & 0x0020) inBuff[0] |= 0x02; else if(!(ByteOr[1] & 0x0020)) inBuff[0] &= ~0x02; 
+    if(ByteAnd[1] & 0x0010) inBuff[0] |= 0x04; else if(!(ByteOr[1] & 0x0010)) inBuff[0] &= ~0x04; 
+    if(ByteAnd[1] & 0x0008) inBuff[0] |= 0x08; else if(!(ByteOr[1] & 0x0008)) inBuff[0] &= ~0x08; 
+    if(ByteAnd[3] & 0x0080) inBuff[0] |= 0x10; else if(!(ByteOr[3] & 0x0080)) inBuff[0] &= ~0x10; 
+    if(ByteAnd[3] & 0x0040) inBuff[0] |= 0x20; else if(!(ByteOr[3] & 0x0040)) inBuff[0] &= ~0x20; 
+    if(ByteAnd[3] & 0x0020) inBuff[0] |= 0x40; else if(!(ByteOr[3] & 0x0020)) inBuff[0] &= ~0x40; 
+    if(ByteAnd[3] & 0x0010) inBuff[0] |= 0x80; else if(!(ByteOr[3] & 0x0010)) inBuff[0] &= ~0x80; 
     
-    /* INA9 ~ INA16 */
-    if(ByteAnd[3] & 0x0040) inBuff[1] |= 0x01; else if(!(ByteOr[3] & 0x0040)) inBuff[1] &= ~0x01; 
-    if(ByteAnd[3] & 0x0020) inBuff[1] |= 0x02; else if(!(ByteOr[3] & 0x0020)) inBuff[1] &= ~0x02; 
-    if(ByteAnd[3] & 0x0010) inBuff[1] |= 0x04; else if(!(ByteOr[3] & 0x0010)) inBuff[1] &= ~0x04; 
-    if(ByteAnd[3] & 0x0008) inBuff[1] |= 0x08; else if(!(ByteOr[3] & 0x0008)) inBuff[1] &= ~0x08; 
-    if(ByteAnd[3] & 0x0080) inBuff[1] |= 0x10; else if(!(ByteOr[3] & 0x0080)) inBuff[1] &= ~0x10; 
-    if(ByteAnd[2] & 0x1000) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x1000)) inBuff[1] &= ~0x20; 
-    if(ByteAnd[2] & 0x0800) inBuff[1] |= 0x40; else if(!(ByteOr[2] & 0x0800)) inBuff[1] &= ~0x40; 
-    if(ByteAnd[2] & 0x0400) inBuff[1] |= 0x80; else if(!(ByteOr[2] & 0x0400)) inBuff[1] &= ~0x80; 
+    /* INA9 ~ INA14 */
+    if(ByteAnd[3] & 0x0008) inBuff[1] |= 0x01; else if(!(ByteOr[3] & 0x0008)) inBuff[1] &= ~0x01; 
+    if(ByteAnd[3] & 0x0004) inBuff[1] |= 0x02; else if(!(ByteOr[3] & 0x0004)) inBuff[1] &= ~0x02; 
+    if(ByteAnd[3] & 0x0002) inBuff[1] |= 0x04; else if(!(ByteOr[3] & 0x0002)) inBuff[1] &= ~0x04; 
+    if(ByteAnd[3] & 0x0001) inBuff[1] |= 0x08; else if(!(ByteOr[3] & 0x0001)) inBuff[1] &= ~0x08; 
+    if(ByteAnd[2] & 0x1000) inBuff[1] |= 0x10; else if(!(ByteOr[2] & 0x1000)) inBuff[1] &= ~0x10; 
+    if(ByteAnd[2] & 0x0800) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x0800)) inBuff[1] &= ~0x20;
+    /* SFSW_INA1 ~ SFSW_INA2 */ 
+    if(ByteAnd[0] & 0x0010) inBuff[1] |= 0x40; else if(!(ByteOr[0] & 0x0010)) inBuff[1] &= ~0x40; 
+    if(ByteAnd[0] & 0x0020) inBuff[1] |= 0x80; else if(!(ByteOr[0] & 0x0020)) inBuff[1] &= ~0x80; 
     
-    /* INA17 ~ INA24 */
-    if(ByteAnd[0] & 0x8000) inBuff[2] |= 0x01; else if(!(ByteOr[0] & 0x0800)) inBuff[2] &= ~0x01; 
-    if(ByteAnd[0] & 0x0200) inBuff[2] |= 0x02; else if(!(ByteOr[0] & 0x0200)) inBuff[2] &= ~0x02; 
-    if(ByteAnd[0] & 0x0100) inBuff[2] |= 0x04; else if(!(ByteOr[0] & 0x0100)) inBuff[2] &= ~0x04; 
-    if(ByteAnd[2] & 0x0200) inBuff[2] |= 0x08; else if(!(ByteOr[2] & 0x0200)) inBuff[2] &= ~0x08; 
-    if(ByteAnd[2] & 0x0100) inBuff[2] |= 0x10; else if(!(ByteOr[2] & 0x0100)) inBuff[2] &= ~0x10; 
-    if(ByteAnd[2] & 0x0080) inBuff[2] |= 0x20; else if(!(ByteOr[2] & 0x0080)) inBuff[2] &= ~0x20; 
-    if(ByteAnd[4] & 0x0200) inBuff[2] |= 0x40; else if(!(ByteOr[4] & 0x0200)) inBuff[2] &= ~0x40; 
-    if(ByteAnd[4] & 0x0100) inBuff[2] |= 0x80; else if(!(ByteOr[4] & 0x0100)) inBuff[2] &= ~0x80; 
+    /* SFSW_INA3 ~ SFSW_INA10 */ 
+    if(ByteAnd[0] & 0x0040) inBuff[2] |= 0x01; else if(!(ByteOr[0] & 0x0040)) inBuff[2] &= ~0x01; 
+    if(ByteAnd[0] & 0x0080) inBuff[2] |= 0x02; else if(!(ByteOr[0] & 0x0080)) inBuff[2] &= ~0x02; 
+    if(ByteAnd[2] & 0x0010) inBuff[2] |= 0x04; else if(!(ByteOr[2] & 0x0010)) inBuff[2] &= ~0x04; 
+    if(ByteAnd[2] & 0x0020) inBuff[2] |= 0x08; else if(!(ByteOr[2] & 0x0020)) inBuff[2] &= ~0x08; 
+    if(ByteAnd[1] & 0x0001) inBuff[2] |= 0x10; else if(!(ByteOr[1] & 0x0001)) inBuff[2] &= ~0x10; 
+    if(ByteAnd[1] & 0x0002) inBuff[2] |= 0x20; else if(!(ByteOr[1] & 0x0002)) inBuff[2] &= ~0x20; 
+    if(ByteAnd[1] & 0x0004) inBuff[2] |= 0x40; else if(!(ByteOr[1] & 0x0004)) inBuff[2] &= ~0x40; 
+    if(ByteAnd[4] & 0x0080) inBuff[2] |= 0x80; else if(!(ByteOr[4] & 0x0080)) inBuff[2] &= ~0x80;
     
-    /* INA25 ~ INA29 */
-    if(ByteAnd[4] & 0x0080) inBuff[3] |= 0x01; else if(!(ByteOr[4] & 0x0080)) inBuff[3] &= ~0x01; 
-    if(ByteAnd[1] & 0x0004) inBuff[3] |= 0x02; else if(!(ByteOr[1] & 0x0004)) inBuff[3] &= ~0x02; 
-    if(ByteAnd[1] & 0x0002) inBuff[3] |= 0x04; else if(!(ByteOr[1] & 0x0002)) inBuff[3] &= ~0x04; 
-    if(ByteAnd[1] & 0x0001) inBuff[3] |= 0x08; else if(!(ByteOr[1] & 0x0001)) inBuff[3] &= ~0x08;
-    if(ByteAnd[2] & 0x0020) inBuff[3] |= 0x10; else if(!(ByteOr[2] & 0x0020)) inBuff[3] &= ~0x10;
-    
-    /* AX1 ~ AX8 */
-    if(ByteAnd[2] & 0x0040) inBuff[4] |= 0x01; else if(!(ByteOr[2] & 0x0040)) inBuff[4] &= ~0x01; 
-    if(ByteAnd[3] & 0x8000) inBuff[4] |= 0x02; else if(!(ByteOr[3] & 0x8000)) inBuff[4] &= ~0x02; 
-    if(ByteAnd[3] & 0x4000) inBuff[4] |= 0x04; else if(!(ByteOr[3] & 0x4000)) inBuff[4] &= ~0x04; 
-    if(ByteAnd[3] & 0x2000) inBuff[4] |= 0x08; else if(!(ByteOr[3] & 0x2000)) inBuff[4] &= ~0x08; 
-    if(ByteAnd[3] & 0x1000) inBuff[4] |= 0x10; else if(!(ByteOr[3] & 0x1000)) inBuff[4] &= ~0x10; 
-    if(ByteAnd[3] & 0x0800) inBuff[4] |= 0x20; else if(!(ByteOr[3] & 0x0800)) inBuff[4] &= ~0x20; 
-    if(ByteAnd[3] & 0x0400) inBuff[4] |= 0x40; else if(!(ByteOr[3] & 0x0400)) inBuff[4] &= ~0x40; 
-    if(ByteAnd[3] & 0x0200) inBuff[4] |= 0x80; else if(!(ByteOr[3] & 0x0200)) inBuff[4] &= ~0x80;
-
-    /* AX9 ~ AX16 */
-    if(ByteAnd[3] & 0x0100) inBuff[5] |= 0x01; else if(!(ByteOr[3] & 0x0100)) inBuff[5] &= ~0x01; 
-    if(ByteAnd[1] & 0x8000) inBuff[5] |= 0x02; else if(!(ByteOr[1] & 0x8000)) inBuff[5] &= ~0x02; 
-    if(ByteAnd[1] & 0x4000) inBuff[5] |= 0x04; else if(!(ByteOr[1] & 0x4000)) inBuff[5] &= ~0x04; 
-    if(ByteAnd[4] & 0x8000) inBuff[5] |= 0x08; else if(!(ByteOr[4] & 0x8000)) inBuff[5] &= ~0x08; 
-    if(ByteAnd[4] & 0x4000) inBuff[5] |= 0x10; else if(!(ByteOr[4] & 0x4000)) inBuff[5] &= ~0x10; 
-    if(ByteAnd[4] & 0x2000) inBuff[5] |= 0x20; else if(!(ByteOr[4] & 0x2000)) inBuff[5] &= ~0x20; 
-    if(ByteAnd[4] & 0x1000) inBuff[5] |= 0x40; else if(!(ByteOr[4] & 0x1000)) inBuff[5] &= ~0x40; 
-    if(ByteAnd[4] & 0x0800) inBuff[5] |= 0x80; else if(!(ByteOr[4] & 0x0800)) inBuff[5] &= ~0x80;
-
-    /* AX17 */
-    if(ByteAnd[4] & 0x0400) inBuff[6] |= 0x01; else if(!(ByteOr[4] & 0x0400)) inBuff[6] &= ~0x01;
-    
-//    if(PinValue[read_pin_cnt][1] & 0x0001) inBuff[6] &= ~0x10;  else    inBuff[6] |= 0x10;
-//    if(PinValue[read_pin_cnt][1] & 0x0004) inBuff[6] &= ~0x20;  else    inBuff[6] |= 0x20; 
-//    if(PinValue[read_pin_cnt][4] & 0x4000) inBuff[6] |= 0x40;   else    inBuff[6] &= ~0x40; 
-//    if(PinValue[read_pin_cnt][1] & 0x0400) inBuff[6] |= 0x80;   else    inBuff[6] &= ~0x80; 
-    
-    /* SF_RL_DRV_FB */
-    if(ByteAnd[4] & 0x0008) inBuff[7] |= 0x01; else if(!(ByteOr[4] & 0x0008)) inBuff[7] &= ~0x01; 
-    /* SF_PWR_FB_CPU */
-    if(ByteAnd[1] & 0x0100) inBuff[7] |= 0x02; else if(!(ByteOr[1] & 0x0100)) inBuff[7] &= ~0x02; 
-    /* SF_RL_FB */
-    if(ByteAnd[2] & 0x0004) inBuff[7] |= 0x04; else if(!(ByteOr[2] & 0x0004)) inBuff[7] &= ~0x04; 
-    /* SF_RL2_FB_CPU1 */
-    if(ByteAnd[4] & 0x0040) inBuff[7] |= 0x08; else if(!(ByteOr[4] & 0x0040)) inBuff[7] &= ~0x08; 
-    /* AUX_FB */
-    if(ByteAnd[2] & 0x0002) inBuff[7] |= 0x10; else if(!(ByteOr[2] & 0x0002)) inBuff[7] &= ~0x10; 
+    /* SFSW_INA11 ~ SFSW_INA18 */ 
+    if(ByteAnd[4] & 0x0100) inBuff[3] |= 0x01; else if(!(ByteOr[4] & 0x0100)) inBuff[3] &= ~0x01; 
+    if(ByteAnd[4] & 0x0200) inBuff[3] |= 0x02; else if(!(ByteOr[4] & 0x0200)) inBuff[3] &= ~0x02;
+    if(ByteAnd[4] & 0x0400) inBuff[3] |= 0x04; else if(!(ByteOr[4] & 0x0400)) inBuff[3] &= ~0x04;
+    if(ByteAnd[4] & 0x0800) inBuff[3] |= 0x08; else if(!(ByteOr[4] & 0x0800)) inBuff[3] &= ~0x08; 
+    if(ByteAnd[4] & 0x1000) inBuff[3] |= 0x10; else if(!(ByteOr[4] & 0x1000)) inBuff[3] &= ~0x10; 
+    if(ByteAnd[4] & 0x2000) inBuff[3] |= 0x20; else if(!(ByteOr[4] & 0x2000)) inBuff[3] &= ~0x20;
+    if(ByteAnd[4] & 0x4000) inBuff[3] |= 0x40; else if(!(ByteOr[4] & 0x4000)) inBuff[3] &= ~0x40; 
+    if(ByteAnd[4] & 0x8000) inBuff[3] |= 0x80; else if(!(ByteOr[4] & 0x8000)) inBuff[3] &= ~0x80; 
 
     
 #else  
     
     /* INB1 ~ INB8 */
-    if(ByteAnd[1] & 0x0080) inBuff[0] &= ~0x01; else if(!(ByteOr[1] & 0x0080)) inBuff[0] |= 0x01; 
-    if(ByteAnd[1] & 0x0040) inBuff[0] &= ~0x02; else if(!(ByteOr[1] & 0x0040)) inBuff[0] |= 0x02; 
-    if(ByteAnd[1] & 0x0020) inBuff[0] &= ~0x04; else if(!(ByteOr[1] & 0x0020)) inBuff[0] |= 0x04; 
-    if(ByteAnd[1] & 0x0010) inBuff[0] &= ~0x08; else if(!(ByteOr[1] & 0x0010)) inBuff[0] |= 0x08; 
-    if(ByteAnd[1] & 0x0008) inBuff[0] &= ~0x10; else if(!(ByteOr[1] & 0x0008)) inBuff[0] |= 0x10; 
-    if(ByteAnd[3] & 0x0004) inBuff[0] &= ~0x20; else if(!(ByteOr[3] & 0x0004)) inBuff[0] |= 0x20; 
-    if(ByteAnd[3] & 0x0002) inBuff[0] &= ~0x40; else if(!(ByteOr[3] & 0x0002)) inBuff[0] |= 0x40; 
-    if(ByteAnd[3] & 0x0001) inBuff[0] &= ~0x80; else if(!(ByteOr[3] & 0x0001)) inBuff[0] |= 0x80; 
+    if(ByteAnd[1] & 0x0040) inBuff[0] |= 0x01; else if(!(ByteOr[1] & 0x0040)) inBuff[0] &= ~0x01; 
+    if(ByteAnd[1] & 0x0020) inBuff[0] |= 0x02; else if(!(ByteOr[1] & 0x0020)) inBuff[0] &= ~0x02; 
+    if(ByteAnd[1] & 0x0010) inBuff[0] |= 0x04; else if(!(ByteOr[1] & 0x0010)) inBuff[0] &= ~0x04; 
+    if(ByteAnd[1] & 0x0008) inBuff[0] |= 0x08; else if(!(ByteOr[1] & 0x0008)) inBuff[0] &= ~0x08; 
+    if(ByteAnd[3] & 0x0080) inBuff[0] |= 0x10; else if(!(ByteOr[3] & 0x0080)) inBuff[0] &= ~0x10; 
+    if(ByteAnd[3] & 0x0040) inBuff[0] |= 0x20; else if(!(ByteOr[3] & 0x0040)) inBuff[0] &= ~0x20; 
+    if(ByteAnd[3] & 0x0020) inBuff[0] |= 0x40; else if(!(ByteOr[3] & 0x0020)) inBuff[0] &= ~0x40; 
+    if(ByteAnd[3] & 0x0010) inBuff[0] |= 0x80; else if(!(ByteOr[3] & 0x0010)) inBuff[0] &= ~0x80; 
     
-    /* INB9 ~ INB16 */
-    if(ByteAnd[0] & 0x8000) inBuff[1] |= 0x01; else if(!(ByteOr[0] & 0x8000)) inBuff[1] &= ~0x01; 
-    if(ByteAnd[0] & 0x0400) inBuff[1] |= 0x02; else if(!(ByteOr[0] & 0x0400)) inBuff[1] &= ~0x02; 
-    if(ByteAnd[0] & 0x0200) inBuff[1] |= 0x04; else if(!(ByteOr[0] & 0x0200)) inBuff[1] &= ~0x04; 
-    if(ByteAnd[0] & 0x0100) inBuff[1] |= 0x08; else if(!(ByteOr[0] & 0x0100)) inBuff[1] &= ~0x08; 
-    if(ByteAnd[2] & 0x0200) inBuff[1] |= 0x10; else if(!(ByteOr[2] & 0x0200)) inBuff[1] &= ~0x10; 
-    if(ByteAnd[2] & 0x0100) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x0100)) inBuff[1] &= ~0x20; 
-    if(ByteAnd[2] & 0x0080) inBuff[1] |= 0x40; else if(!(ByteOr[2] & 0x0080)) inBuff[1] &= ~0x40; 
-    if(ByteAnd[2] & 0x0040) inBuff[1] |= 0x80; else if(!(ByteOr[2] & 0x0040)) inBuff[1] &= ~0x80; 
+    /* INB9 ~ INB14 */
+    if(ByteAnd[3] & 0x0008) inBuff[1] |= 0x01; else if(!(ByteOr[3] & 0x0008)) inBuff[1] &= ~0x01; 
+    if(ByteAnd[3] & 0x0004) inBuff[1] |= 0x02; else if(!(ByteOr[3] & 0x0004)) inBuff[1] &= ~0x02; 
+    if(ByteAnd[3] & 0x0002) inBuff[1] |= 0x04; else if(!(ByteOr[3] & 0x0002)) inBuff[1] &= ~0x04; 
+    if(ByteAnd[3] & 0x0001) inBuff[1] |= 0x08; else if(!(ByteOr[3] & 0x0001)) inBuff[1] &= ~0x08; 
+    if(ByteAnd[2] & 0x1000) inBuff[1] |= 0x10; else if(!(ByteOr[2] & 0x1000)) inBuff[1] &= ~0x10; 
+    if(ByteAnd[2] & 0x0800) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x0800)) inBuff[1] &= ~0x20;
+    /* SFSW_INB1 ~ SFSW_INB2 */ 
+    if(ByteAnd[0] & 0x0008) inBuff[1] |= 0x40; else if(!(ByteOr[0] & 0x0008)) inBuff[1] &= ~0x40; 
+    if(ByteAnd[0] & 0x0010) inBuff[1] |= 0x80; else if(!(ByteOr[0] & 0x0010)) inBuff[1] &= ~0x80; 
     
-    /* INB17 ~ INB24 */
-    if(ByteAnd[3] & 0x8000) inBuff[2] |= 0x01; else if(!(ByteOr[3] & 0x8000)) inBuff[2] &= ~0x01; 
-    if(ByteAnd[3] & 0x4000) inBuff[2] |= 0x02; else if(!(ByteOr[3] & 0x4000)) inBuff[2] &= ~0x02; 
-    if(ByteAnd[3] & 0x2000) inBuff[2] |= 0x04; else if(!(ByteOr[3] & 0x2000)) inBuff[2] &= ~0x04; 
-    if(ByteAnd[3] & 0x1000) inBuff[2] |= 0x08; else if(!(ByteOr[3] & 0x1000)) inBuff[2] &= ~0x08; 
-    if(ByteAnd[3] & 0x0800) inBuff[2] |= 0x10; else if(!(ByteOr[3] & 0x0800)) inBuff[2] &= ~0x10; 
-    if(ByteAnd[3] & 0x0400) inBuff[2] |= 0x20; else if(!(ByteOr[3] & 0x0400)) inBuff[2] &= ~0x20; 
-    if(ByteAnd[3] & 0x0200) inBuff[2] |= 0x40; else if(!(ByteOr[3] & 0x0200)) inBuff[2] &= ~0x40; 
-    if(ByteAnd[3] & 0x0100) inBuff[2] |= 0x80; else if(!(ByteOr[3] & 0x0100)) inBuff[2] &= ~0x80; 
+    /* SFSW_INB3 ~ SFSW_INB10 */ 
+    if(ByteAnd[2] & 0x0010) inBuff[2] |= 0x01; else if(!(ByteOr[2] & 0x0010)) inBuff[2] &= ~0x01; 
+    if(ByteAnd[2] & 0x0020) inBuff[2] |= 0x02; else if(!(ByteOr[2] & 0x0020)) inBuff[2] &= ~0x02; 
+    if(ByteAnd[1] & 0x0001) inBuff[2] |= 0x04; else if(!(ByteOr[1] & 0x0001)) inBuff[2] &= ~0x04; 
+    if(ByteAnd[1] & 0x0002) inBuff[2] |= 0x08; else if(!(ByteOr[1] & 0x0002)) inBuff[2] &= ~0x08; 
+    if(ByteAnd[1] & 0x0004) inBuff[2] |= 0x10; else if(!(ByteOr[1] & 0x0004)) inBuff[2] &= ~0x10; 
+    if(ByteAnd[4] & 0x0080) inBuff[2] |= 0x20; else if(!(ByteOr[4] & 0x0080)) inBuff[2] &= ~0x20; 
+    if(ByteAnd[4] & 0x0100) inBuff[2] |= 0x40; else if(!(ByteOr[4] & 0x0100)) inBuff[2] &= ~0x40; 
+    if(ByteAnd[4] & 0x0200) inBuff[2] |= 0x80; else if(!(ByteOr[4] & 0x0200)) inBuff[2] &= ~0x80;
     
-    /* INB25 ~ INB29 */
-    if(ByteAnd[1] & 0x8000) inBuff[3] |= 0x01; else if(!(ByteOr[1] & 0x8000)) inBuff[3] &= ~0x01; 
-    if(ByteAnd[1] & 0x4000) inBuff[3] |= 0x02; else if(!(ByteOr[1] & 0x4000)) inBuff[3] &= ~0x02; 
-    if(ByteAnd[1] & 0x2000) inBuff[3] |= 0x04; else if(!(ByteOr[1] & 0x2000)) inBuff[3] &= ~0x04; 
-    if(ByteAnd[1] & 0x1000) inBuff[3] |= 0x08; else if(!(ByteOr[1] & 0x1000)) inBuff[3] &= ~0x08;
-    if(ByteAnd[3] & 0x0008) inBuff[3] |= 0x10; else if(!(ByteOr[3] & 0x0008)) inBuff[3] &= ~0x10;
-    
-    /* BX1 ~ BX8 */
-    if(ByteAnd[1] & 0x0800) inBuff[4] |= 0x01; else if(!(ByteOr[1] & 0x0800)) inBuff[4] &= ~0x01; 
-    if(ByteAnd[1] & 0x0400) inBuff[4] |= 0x02; else if(!(ByteOr[1] & 0x0400)) inBuff[4] &= ~0x02; 
-    if(ByteAnd[4] & 0x8000) inBuff[4] |= 0x04; else if(!(ByteOr[4] & 0x8000)) inBuff[4] &= ~0x04; 
-    if(ByteAnd[4] & 0x4000) inBuff[4] |= 0x08; else if(!(ByteOr[4] & 0x4000)) inBuff[4] &= ~0x08; 
-    if(ByteAnd[4] & 0x2000) inBuff[4] |= 0x10; else if(!(ByteOr[4] & 0x2000)) inBuff[4] &= ~0x10; 
-    if(ByteAnd[4] & 0x1000) inBuff[4] |= 0x20; else if(!(ByteOr[4] & 0x1000)) inBuff[4] &= ~0x20; 
-    if(ByteAnd[4] & 0x0800) inBuff[4] |= 0x40; else if(!(ByteOr[4] & 0x0800)) inBuff[4] &= ~0x40; 
-    if(ByteAnd[4] & 0x0400) inBuff[4] |= 0x80; else if(!(ByteOr[4] & 0x0400)) inBuff[4] &= ~0x80;
-
-    /* BX9 ~ BX16 */
-    if(ByteAnd[4] & 0x0200) inBuff[5] |= 0x01; else if(!(ByteOr[4] & 0x0200)) inBuff[5] &= ~0x01; 
-    if(ByteAnd[4] & 0x0100) inBuff[5] |= 0x02; else if(!(ByteOr[4] & 0x0100)) inBuff[5] &= ~0x02; 
-    if(ByteAnd[4] & 0x0080) inBuff[5] |= 0x04; else if(!(ByteOr[4] & 0x0080)) inBuff[5] &= ~0x04; 
-    if(ByteAnd[1] & 0x0004) inBuff[5] |= 0x08; else if(!(ByteOr[1] & 0x0004)) inBuff[5] &= ~0x08; 
-    if(ByteAnd[1] & 0x0002) inBuff[5] |= 0x10; else if(!(ByteOr[1] & 0x0002)) inBuff[5] &= ~0x10; 
-    if(ByteAnd[1] & 0x0001) inBuff[5] |= 0x20; else if(!(ByteOr[1] & 0x0001)) inBuff[5] &= ~0x20; 
-    if(ByteAnd[2] & 0x0020) inBuff[5] |= 0x40; else if(!(ByteOr[2] & 0x0020)) inBuff[5] &= ~0x40; 
-    if(ByteAnd[2] & 0x0010) inBuff[5] |= 0x80; else if(!(ByteOr[2] & 0x0010)) inBuff[5] &= ~0x80;
-
-    /* BX17 */
-    if(ByteAnd[0] & 0x0010) inBuff[6] |= 0x01; else if(!(ByteOr[0] & 0x0010)) inBuff[6] &= ~0x01;
-    
-//    if(PinValue[read_pin_cnt][1] & 0x0001) inBuff[6] &= ~0x10;  else    inBuff[6] |= 0x10;
-//    if(PinValue[read_pin_cnt][1] & 0x0004) inBuff[6] &= ~0x20;  else    inBuff[6] |= 0x20; 
-//    if(PinValue[read_pin_cnt][4] & 0x4000) inBuff[6] |= 0x40;   else    inBuff[6] &= ~0x40; 
-//    if(PinValue[read_pin_cnt][1] & 0x0400) inBuff[6] |= 0x80;   else    inBuff[6] &= ~0x80; 
-    
-    /* SF_RL_DRV_FB */
-    if(ByteAnd[4] & 0x0004) inBuff[7] |= 0x01; else if(!(ByteOr[4] & 0x0004)) inBuff[7] &= ~0x01; 
-    /* SF_PWR_FB_CPU */
-    if(ByteAnd[4] & 0x0001) inBuff[7] |= 0x02; else if(!(ByteOr[4] & 0x0001)) inBuff[7] &= ~0x02; 
-    /* SF_RL_FB */
-    if(ByteAnd[4] & 0x0040) inBuff[7] |= 0x04; else if(!(ByteOr[4] & 0x0040)) inBuff[7] &= ~0x04; 
-    /* SF_RL1_FB_CPU2 */
-    if(ByteAnd[2] & 0x0004) inBuff[7] |= 0x08; else if(!(ByteOr[2] & 0x0004)) inBuff[7] &= ~0x08; 
-    /* AUX_FB */
-    if(ByteAnd[4] & 0x0010) inBuff[7] |= 0x10; else if(!(ByteOr[4] & 0x0010)) inBuff[7] &= ~0x10; 
+    /* SFSW_INB11 ~ SFSW_INB18 */ 
+    if(ByteAnd[4] & 0x0400) inBuff[3] |= 0x01; else if(!(ByteOr[4] & 0x0400)) inBuff[3] &= ~0x01; 
+    if(ByteAnd[4] & 0x0800) inBuff[3] |= 0x02; else if(!(ByteOr[4] & 0x0800)) inBuff[3] &= ~0x02;
+    if(ByteAnd[4] & 0x1000) inBuff[3] |= 0x04; else if(!(ByteOr[4] & 0x1000)) inBuff[3] &= ~0x04;
+    if(ByteAnd[4] & 0x2000) inBuff[3] |= 0x08; else if(!(ByteOr[4] & 0x2000)) inBuff[3] &= ~0x08; 
+    if(ByteAnd[4] & 0x4000) inBuff[3] |= 0x10; else if(!(ByteOr[4] & 0x4000)) inBuff[3] &= ~0x10; 
+    if(ByteAnd[4] & 0x8000) inBuff[3] |= 0x20; else if(!(ByteOr[4] & 0x8000)) inBuff[3] &= ~0x20;
+    if(ByteAnd[1] & 0x0400) inBuff[3] |= 0x40; else if(!(ByteOr[1] & 0x0400)) inBuff[3] &= ~0x40; 
+    if(ByteAnd[1] & 0x0800) inBuff[3] |= 0x80; else if(!(ByteOr[1] & 0x0800)) inBuff[3] &= ~0x80; 
+ 
     
 #endif    
 
 }
 
+#ifdef GEC_DBL2_SLAVE
+/*******************************************************************************
+* Function Name  : output_driver
+* Description    : Enable or disable relay output.
+*                  
+* Input          : out_buff: set the gpio pin value of data
+*                  None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void output_driver(u8 out_buff[])
+{
+	if(out_buff[0] & 0x01) 		RELAY_OC1_ON(); 		else RELAY_OC1_OFF(); 					  
+	if(out_buff[0] & 0x02) 		RELAY_OC2_ON(); 		else RELAY_OC2_OFF(); 	 					  
+	if(out_buff[0] & 0x04) 		RELAY_OC3_ON(); 		else RELAY_OC3_OFF();	 					  
+	if(out_buff[0] & 0x08)  	RELAY_OC4_ON(); 		else RELAY_OC4_OFF(); 						  
+	if(out_buff[0] & 0x10)  	RELAY_OC5_ON(); 		else RELAY_OC5_OFF(); 					  
+	if(out_buff[0] & 0x20)  	TRAN_OC1_ON(); 		else TRAN_OC1_OFF();				  
+	if(out_buff[0] & 0x40)  	TRAN_OC2_ON(); 		else TRAN_OC2_OFF();				  
+	if(out_buff[0] & 0x80)		TRAN_OC3_ON(); 		else TRAN_OC3_OFF(); 	
+ 
+}
+#endif
+
+/*******************************************************************************
+* Function Name  : ReadSwDp
+* Description    : Read swdp data.
+*                  
+* Input          : None
+*                  None
+* Output         : None
+* Return         : swdp value.
+*******************************************************************************/
+u8 ReadSwDp(void)
+{
+    u8 swdp[4] = {0};
+    u8 value;
+
+#ifdef GEC_DBL2_MASTER 
+    swdp[0] = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_8);
+    swdp[1] = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_9);
+    swdp[2] = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_10);
+    swdp[3] = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_11);
+
+#else    
+    swdp[0] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_6);
+    swdp[1] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_7);
+    swdp[2] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_8);
+    swdp[3] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_9);
+#endif
+    
+    value = ( ((~swdp[3])&0x01) << 3 ) | ( ((~swdp[2])&0x01) << 2 ) | ( ((~swdp[1])&0x01) << 1 ) | ( ((~swdp[0])&0x01) << 0 );
+    
+    return   value;
+}
 
 /******************************  END OF FILE  *********************************/
 

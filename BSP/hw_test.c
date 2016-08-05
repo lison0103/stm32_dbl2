@@ -17,7 +17,8 @@
 #include "safety_test.h"
 #include "esc.h"
 #include "esc_comm_dualcpu.h"
-#ifdef GEC_DBL2_MASTER  
+#include "bsp_input.h"
+#ifdef GEC_DBL2_SLAVE  
 #include "can.h"
 #endif
 
@@ -26,7 +27,10 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-u8 sflag = 0,inputnum = 0;
+#ifdef GEC_DBL2_SLAVE
+u8 sflag1 = 0,inputnum1 = 0;
+u8 sflag2 = 0,inputnum2 = 0;
+#endif
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -34,7 +38,7 @@ u8 sflag = 0,inputnum = 0;
 
     
         
-
+#ifdef GEC_DBL2_SLAVE
 /*******************************************************************************
 * Function Name  : Input_Check
 * Description    : Monitor the input pin status and test.
@@ -46,83 +50,95 @@ u8 sflag = 0,inputnum = 0;
 *******************************************************************************/
 void Input_Check(void)
 {
-  
         u32 *ulPt_Input1,*ulPt_Input2;
+        u8 *ulPt_Output;
+        u8 Dip_value1,Dip_value2;
         u8 i;
 
-
-        if( testmode == 1 )
+        if( testmode == 1 )        
         {
-            ulPt_Input1 = (u32*)&EscRTBuff[4];       
-            ulPt_Input2 = (u32*)&EscRTBuff[8];
-            sflag = 0;
-            inputnum = 0;        
+            ulPt_Input2 = (u32*)&EscRTBuff[4];
+            ulPt_Input1 = (u32*)&McRxBuff[4];
+            ulPt_Output = &EscRTBuff[30];
             
             
-            for( i = 0; i < 29; i++ )
+            sflag1 = 0;
+            inputnum1 = 0;      
+            sflag2 = 0;
+            inputnum2 = 0;            
+            
+            for( i = 0; i < 32; i++ )
             {
                 if( *ulPt_Input1 & ((u32)( 1 << i )))
                 {
-                    sflag++;
-                    inputnum = i + 1;
+                    sflag1++;
+                    inputnum1 = i + 1;
                 }
-            }
-            
-            for( i = 0; i < 17; i++ )
+            }        
+
+            for( i = 0; i < 32; i++ )
             {
                 if( *ulPt_Input2 & ((u32)( 1 << i )))
                 {
-                    sflag++;
-                    inputnum = i + 30;
+                    sflag2++;
+                    inputnum2 = i + 1;
                 }
-            }   
+            } 
             
-#ifdef GEC_DBL2_MASTER             
-            CAN1_TX_Data[0] = inputnum;
-            CAN1_TX_Data[1] = sflag;            
-#endif         
+            if( sflag1 != sflag2 || inputnum1 != inputnum2 )
+            {
+                sflag2 = 2;
+            }
             
-            if (( inputnum == 0 ) || ( sflag > 1 ))
+            Dip_value2 = ReadSwDp();
+            for( i = 0; i < 4; i++ )
             {
-                SF_RELAY_OFF(); 
-                AUX_RELAY_OFF();
-            }
-#ifdef GEC_DBL2_MASTER   
-            else if( inputnum & 0x0A )
-            {
-                if ( inputnum & 0x08 )
+                if( Dip_value2 & ((u8)( 1 << i )))
                 {
-                    SF_RELAY_ON(); 
+                    sflag2++;
+                    inputnum2 = i + 33;
                 }
-                
-                if ( inputnum & 0x02 )
-                {
-                    AUX_RELAY_ON(); 
-                } 
-            }
-#else
-            else if( inputnum & 0x05 )
+            }  
+            
+            Dip_value1 = McRxBuff[0];
+            for( i = 0; i < 4; i++ )
             {
-                if ( inputnum & 0x04 )
+                if( Dip_value1 & ((u8)( 1 << i )))
                 {
-                    SF_RELAY_ON(); 
+                    sflag2++;
+                    inputnum2 = i + 37;
                 }
+            } 
+            
+            if(( inputnum2 == 0 ) || ( sflag2 > 1 ))
+            {
                 
-                if ( inputnum & 0x01 )
-                {
-                    AUX_RELAY_ON(); 
-                }   
-            }
-#endif
+                *ulPt_Output = 0;
+                
+            }        
             else
-            {
-                SF_RELAY_OFF(); 
-                AUX_RELAY_OFF();                
+            {                        
+                
+                if( inputnum2 <= 36 )
+                {
+                    *ulPt_Output |= ( inputnum2 );
+                }
+                else
+                {
+                    switch( Dip_value1 )
+                    {
+                       case 0x01: *ulPt_Output |= ( inputnum2 );break; 
+                       case 0x02: *ulPt_Output |= ( inputnum2 + 26 );break; 
+                       case 0x04: *ulPt_Output |= ( inputnum2 + 89 );break;
+                       case 0x08: *ulPt_Output |= ( inputnum2 + 152 );break;
+                       default: *ulPt_Output = 0;; 
+                    }
+                }
             }
-            
-        }
+        }    
+ 
 }
-
+#endif
 
 /*******************************************************************************
 * Function Name  : CrossCommCPUCheck
@@ -150,15 +166,15 @@ void CrossCommCPUCheck(void)
 
     for( i = 0; i < comm_num; i++)
     {
-        SPI1_TX_Data[i] = number;
+        SPIx_TX_Data[i] = number;
     }
     
-    i = MB_CRC16( SPI1_TX_Data, comm_num - 2 );
-    SPI1_TX_Data[comm_num - 2] = i;
-    SPI1_TX_Data[comm_num - 1] = i>>8;
+    i = MB_CRC16( SPIx_TX_Data, comm_num - 2 );
+    SPIx_TX_Data[comm_num - 2] = i;
+    SPIx_TX_Data[comm_num - 1] = i>>8;
     
     
-    SPI1_DMA_ReceiveSendByte(comm_num);
+    SPIx_DMA_ReceiveSendByte(comm_num);
 
 #ifdef GEC_DBL2_MASTER
     DMA_Check_Flag(100000);
@@ -182,23 +198,23 @@ void CrossCommCPUCheck(void)
 
               for( i = 0; i < comm_num - 2; i++ )
               {
-                    SPI1_TX_Data[i] = number;
+                    SPIx_TX_Data[i] = number;
               }
               
-              i = MB_CRC16( SPI1_TX_Data, comm_num - 2 );
-              SPI1_TX_Data[comm_num - 2] = i;
-              SPI1_TX_Data[comm_num - 1] = i>>8;
+              i = MB_CRC16( SPIx_TX_Data, comm_num - 2 );
+              SPIx_TX_Data[comm_num - 2] = i;
+              SPIx_TX_Data[comm_num - 1] = i>>8;
               
-              SPI1_DMA_ReceiveSendByte(comm_num);
+              SPIx_DMA_ReceiveSendByte(comm_num);
                         
               DMA_Check_Flag(40000);
               
-              if(!MB_CRC16(SPI1_RX_Data, comm_num))
+              if(!MB_CRC16(SPIx_RX_Data, comm_num))
               {
 
                   for( i=0; i < comm_num - 2; i++ )
                   {
-                      result = SPI1_RX_Data[i]^(SPI1_TX_Data[i] - 1);
+                      result = SPIx_RX_Data[i]^(SPIx_TX_Data[i] - 1);
                       if( result )
                       {
                           data_error++;                            
@@ -221,16 +237,16 @@ void CrossCommCPUCheck(void)
               
               
 #else
-              if(!MB_CRC16(SPI1_RX_Data, comm_num))
+              if(!MB_CRC16(SPIx_RX_Data, comm_num))
               {                 
                   for( i=0; i < comm_num - 2; i++ )
                   {
-                      SPI1_TX_Data[i] = SPI1_RX_Data[i];
+                      SPIx_TX_Data[i] = SPIx_RX_Data[i];
                   }   
                   
-                  i = MB_CRC16( SPI1_TX_Data, comm_num - 2 );
-                  SPI1_TX_Data[comm_num - 2] = i;
-                  SPI1_TX_Data[comm_num - 1] = i>>8;
+                  i = MB_CRC16( SPIx_TX_Data, comm_num - 2 );
+                  SPIx_TX_Data[comm_num - 2] = i;
+                  SPIx_TX_Data[comm_num - 1] = i>>8;
               } 
               else
               {
@@ -241,7 +257,7 @@ void CrossCommCPUCheck(void)
                   }
               }
               
-              SPI1_DMA_ReceiveSendByte(comm_num);
+              SPIx_DMA_ReceiveSendByte(comm_num);
 
               DMA_Check_Flag(40000);
 #endif              
@@ -250,7 +266,7 @@ void CrossCommCPUCheck(void)
 
 #ifdef GEC_DBL2_MASTER 
 #else
-        SPI1_DMA_ReceiveSendByte(comm_num);
+        SPIx_DMA_ReceiveSendByte(comm_num);
 #endif
     if( data_error > 2 )
     {
@@ -263,7 +279,7 @@ void CrossCommCPUCheck(void)
 }
 
 
-#ifdef GEC_DBL2_MASTER 
+#ifdef GEC_DBL2_SLAVE 
 /*******************************************************************************
 * Function Name  : HardwareTEST
 * Description    : Test the board.
@@ -295,6 +311,7 @@ void HardwareTEST(void)
         len1 = BSP_CAN_Receive(CAN1, &CAN1_RX_Normal, CAN1_RX_Data, 0);
         delay_ms(1);
         EWDT_TOOGLE();
+        IWDG_ReloadCounter(); 
         waittms++;
         if( waittms > 5000 )
         {
@@ -319,6 +336,7 @@ void HardwareTEST(void)
             len1 = BSP_CAN_Receive(CAN1, &CAN1_RX_Normal, CAN1_RX_Data, 0);
             delay_ms(1);
             EWDT_TOOGLE();
+            IWDG_ReloadCounter(); 
             waittms++;
             if( waittms > 2000 )
             {
@@ -359,7 +377,10 @@ void HardwareTEST(void)
 	        
     }
     
-
+    /* no CAN */
+    testmode = 1;
+    /*********/
+    
     senddata[0] = 0xbc;
     if( testmode == 1 )
     {
@@ -369,8 +390,24 @@ void HardwareTEST(void)
     {
         senddata[1] = 0x02;
     }
-    CPU_Exchange_Data(senddata, 2);//send
-    CPU_Data_Check(recvdata, &len);
+    
+    CPU_Exchange_Data(senddata, 2);
+    CPU_Data_Check(recvdata, &len);//recv 
+    
+    while( len != 2 || recvdata[0] != 0xbc )
+    {
+        SPIx_Configuration(SPI1);
+        CPU_Exchange_Data(senddata, 2);
+        CPU_Data_Check(recvdata, &len);//recv  
+        delay_ms(100);
+        EWDT_TOOGLE();
+        IWDG_ReloadCounter(); 
+    }
+
+    if( len == 0x02 && recvdata[0] == 0xbc )
+    {
+        CPU_Exchange_Data(senddata, 2);
+    }
     
 }
 #else
@@ -390,18 +427,19 @@ void HardwareTEST(void)
     u8 senddata[10],recvdata[10];
 
     
-    
     senddata[0] = 0xbc;
-    if( testmode == 1 )
+    senddata[1] = 0x01;
+
+    CPU_Exchange_Data(senddata, 2);//send
+    CPU_Data_Check(recvdata, &len); 
+    while( len != 2 || recvdata[0] != 0xbc )
     {
-        senddata[1] = 0x01;
+        CPU_Exchange_Data(senddata, 2);//send
+        CPU_Data_Check(recvdata, &len); 
+        delay_ms(100);
+        EWDT_TOOGLE();
+        IWDG_ReloadCounter(); 
     }
-    else
-    {
-        senddata[1] = 0x02;
-    }
-    CPU_Exchange_Data(senddata, 2);
-    CPU_Data_Check(recvdata, &len);//recv  
     
     if( len == 0x02 && recvdata[0] == 0xbc )
     {

@@ -18,14 +18,14 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /** LED Port **/
-#ifdef GEC_SF_MASTER
-#define LED_ON()   GPIO_ResetBits(GPIOA,GPIO_Pin_4)	
-#define LED_OFF()   GPIO_SetBits(GPIOA,GPIO_Pin_4)
-#define LED_FLASH()   GPIOA->ODR ^= 0X0010
+#ifdef GEC_DBL2_MASTER
+#define LED_ON()   GPIO_ResetBits(GPIOA,GPIO_Pin_15)	
+#define LED_OFF()   GPIO_SetBits(GPIOA,GPIO_Pin_15)
+#define LED_FLASH()   GPIOA->ODR ^= 0x8000
 #else
-#define LED_ON()   GPIO_ResetBits(GPIOA,GPIO_Pin_1)	
-#define LED_OFF()   GPIO_SetBits(GPIOA,GPIO_Pin_1)
-#define LED_FLASH()   GPIOA->ODR ^= 0X0002
+#define LED_ON()   GPIO_ResetBits(GPIOB,GPIO_Pin_12)	
+#define LED_OFF()   GPIO_SetBits(GPIOB,GPIO_Pin_12)
+#define LED_FLASH()   GPIOB->ODR ^= 0x1000
 #endif
 /* Exported functions ------------------------------------------------------- */
 void LED_Init(void); 

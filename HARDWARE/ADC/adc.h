@@ -1,15 +1,15 @@
 /*******************************************************************************
-* File Name          : spi.h
+* File Name          : adc.h
 * Author             : lison
 * Version            : V1.0
-* Date               : 03/22/2016
-* Description        : The file contains prototype of spi driver functions.
+* Date               : 08/07/2016
+* Description        : This file contains prototype of adc conversion functions.
 *			          
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SPI_H
-#define __SPI_H
+#ifndef __ADC_H
+#define __ADC_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
@@ -17,26 +17,14 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
-#define buffersize 250
-
 /* Exported functions ------------------------------------------------------- */
-void SPIx_Init(void);			
-void SPIx_Configuration(SPI_TypeDef* SPIx);
-void SPIx_DMA_ReceiveSendByte( u16 num );
-void DMA_Check_Flag(u32 times);
+void Adc_Init(void);
+u16  Get_Adc(void); 
+s32 Get_Adc_Average(void);
+	
 
-extern u8 SPIx_TX_Buff[buffersize] ;
-extern u8 SPIx_RX_Buff[buffersize] ;
-extern u8 SPIx_TX_Data[buffersize] ;
-extern u8 SPIx_RX_Data[buffersize] ;
-
-
-
-
-#endif
-
+#endif  /* __ADC_H */
 
 /******************************  END OF FILE  *********************************/
-
 
 

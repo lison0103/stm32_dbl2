@@ -83,9 +83,6 @@ void Send_state_to_CPU(void)
         cpu_senddata_buffer[i] = EscRTBuff[i];
     }    
     
-    /* 2. esc state --------------------------*/        
-//    cpu_senddata_buffer[100] = (u8)SfBase_EscState;
-//    cpu_senddata_buffer[101] = (u8)(SfBase_EscState >> 8);
 }
 
 /*******************************************************************************
@@ -104,9 +101,7 @@ void Receive_state_from_CPU(void)
         {
             McRxBuff[i] = cpu_recvdata_buffer[i];
         }
-        
-        /* 2. esc state */
-//        pcOMC_SfBase_EscState = ( cpu_recvdata_buffer[101] << 8 | cpu_recvdata_buffer[100] );    
+           
     }
 }
 
@@ -211,16 +206,16 @@ void CPU_Data_Check( u8 *buffer, u8 *len )
        
     DMA_Check_Flag(10000000);    
         
-    if(!MB_CRC16(SPI1_RX_Data, comm_num))
+    if(!MB_CRC16(SPIx_RX_Data, comm_num))
     {
         
         EN_ERROR_SYS3 = 0;    
         EN_ERROR7 &= ~0x02;
         
-        *len = SPI1_RX_Data[0];       
+        *len = SPIx_RX_Data[0];       
         for( u8 i = 0; i < *len; i++ )
         {
-            buffer[i] = SPI1_RX_Data[ i + 1 ];
+            buffer[i] = SPIx_RX_Data[ i + 1 ];
         }
                   
     }
@@ -256,20 +251,20 @@ void CPU_Exchange_Data( u8 *buffer, u8 len )
     comm_num = buffersize;  
     for(i = 0; i < comm_num - 2; i++)
     {
-        SPI1_TX_Data[i] = 0;
+        SPIx_TX_Data[i] = 0;
     }
     
-    SPI1_TX_Data[0] = len;
+    SPIx_TX_Data[0] = len;
     for( i = 0; i < len; i++ )
     {
-        SPI1_TX_Data[i + 1] = buffer[i];
+        SPIx_TX_Data[i + 1] = buffer[i];
     }
     
-    i = MB_CRC16( SPI1_TX_Data, comm_num - 2 );
-    SPI1_TX_Data[comm_num - 2] = i;
-    SPI1_TX_Data[comm_num - 1] = i >> 8; 
+    i = MB_CRC16( SPIx_TX_Data, comm_num - 2 );
+    SPIx_TX_Data[comm_num - 2] = i;
+    SPIx_TX_Data[comm_num - 1] = i >> 8; 
     
-    SPI1_DMA_ReceiveSendByte(comm_num);
+    SPIx_DMA_ReceiveSendByte(comm_num);
            
 }
 

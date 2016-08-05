@@ -17,35 +17,36 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 #define SPI1_DR_Addr ( (u32)0x4001300C )
+#define SPI2_DR_Addr ( (u32)0x4000380C )
 
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-void SPI1_DMA_Configuration( void );
+void SPIx_DMA_Configuration( void );
 
-u8 SPI1_TX_Buff[buffersize] = { 0 };
-u8 SPI1_RX_Buff[buffersize] = { 0 };
-u8 SPI1_TX_Data[buffersize] = { 0 };
-u8 SPI1_RX_Data[buffersize] = { 0 };
+u8 SPIx_TX_Buff[buffersize] = { 0 };
+u8 SPIx_RX_Buff[buffersize] = { 0 };
+u8 SPIx_TX_Data[buffersize] = { 0 };
+u8 SPIx_RX_Data[buffersize] = { 0 };
 DMA_InitTypeDef     DMA_InitStructure;
 static u16 waitus = 0;
 
 
 
 /*******************************************************************************
-* Function Name  : SPI1_Configuration
-* Description    : Configure spi1 register.
+* Function Name  : SPIx_Configuration
+* Description    : Configure spix register.
 *                  
 * Input          : None
 *                  None
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SPI1_Configuration(void)
+void SPIx_Configuration(SPI_TypeDef* SPIx)
 {       
         SPI_InitTypeDef  SPI_InitStructure;	
         
-        SPI_I2S_DeInit(SPI1);
+        SPI_I2S_DeInit(SPIx);
 
         /* Setting unidirectional or bidirectional SPI data mode: SPI is set to double two-way full-duplex */
 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;      
@@ -70,49 +71,51 @@ void SPI1_Configuration(void)
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
         /* CRC polynomial value calculation */
 	SPI_InitStructure.SPI_CRCPolynomial = 7;	                        
-	SPI_Init(SPI1, &SPI_InitStructure);   
+	SPI_Init(SPIx, &SPI_InitStructure);   
         
  
         //DMA 
-        SPI1_DMA_Configuration();       
-        SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Tx, ENABLE);
-        SPI_I2S_DMACmd(SPI1, SPI_I2S_DMAReq_Rx, ENABLE);
+        SPIx_DMA_Configuration();       
+        SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Tx, ENABLE);
+        SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Rx, ENABLE);
            
         //CRC
-//        SPI_CalculateCRC(SPI1, ENABLE);
+//        SPI_CalculateCRC(SPIx, ENABLE);
         
         //SPI enable
-	SPI_Cmd(SPI1, ENABLE); 
+	SPI_Cmd(SPIx, ENABLE); 
         
-        printf("SPI INIT \r\n");
 } 
 
 
 /*******************************************************************************
-* Function Name  : SPI1_Init
-* Description    : Intialization SPI1 .
+* Function Name  : SPIx_Init
+* Description    : Intialization SPI.
 *                  
 * Input          : None
 *                  None
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SPI1_Init(void)
+void SPIx_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;        	
 
 #ifdef GEC_DBL2_MASTER        
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7;
+        
+        /* SPI2 */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_15;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        GPIO_Init(GPIOB, &GPIO_InitStructure);
         
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;  
-        GPIO_Init(GPIOA, &GPIO_InitStructure);
-                
+        GPIO_Init(GPIOB, &GPIO_InitStructure);
+             
+        SPIx_Configuration(SPI2);
 #else
-               
+        /* SPI1 */      
         /* SPI pin mappings */
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_5);
         GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_5);
@@ -128,28 +131,65 @@ void SPI1_Init(void)
         GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
         GPIO_Init(GPIOA, &GPIO_InitStructure);
     
+        SPIx_Configuration(SPI1);
 #endif           
-        
-        SPI1_Configuration();
+
 }    
 
 
 /*******************************************************************************
-* Function Name  : SPI1_DMA_Configuration
-* Description    : Configuring SPI1_RX DMA channel 2, SPI1_TX DMA channel 3
+* Function Name  : SPIx_DMA_Configuration
+* Description    : Configuring SPI1_RX DMA channel 2, SPI1_TX DMA channel 3 for slave
+*                  Configuring SPI2_RX DMA channel 4, SPI2_TX DMA channel 5 for master.
 * Input          : None
 * Output         : None
 * Return         : None
 *******************************************************************************/
 
-void SPI1_DMA_Configuration( void )
+void SPIx_DMA_Configuration( void )
 {  
       
+#ifdef GEC_DBL2_MASTER
+    
+      DMA_DeInit(DMA1_Channel4);
+      DMA_InitStructure.DMA_PeripheralBaseAddr = SPI2_DR_Addr;
+      /* Set the DMA memory address */
+      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPIx_RX_Buff;
+      DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC; 
+      /* A transmission number is set to buffersize */
+      DMA_InitStructure.DMA_BufferSize = buffersize; 
       
+      DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+      DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+      DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
+      DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte; 
+      DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;  
+      DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+      DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  
+      DMA_Init(DMA1_Channel4, &DMA_InitStructure);  
+      
+      
+      DMA_DeInit(DMA1_Channel5);
+      DMA_InitStructure.DMA_PeripheralBaseAddr = SPI2_DR_Addr;
+      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPIx_TX_Buff;
+      DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST; 
+      DMA_InitStructure.DMA_BufferSize = buffersize; 
+      
+      DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+      DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+      DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; 
+      DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte; 
+      DMA_InitStructure.DMA_Mode = DMA_Mode_Normal; 
+      DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
+      DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  
+      DMA_Init(DMA1_Channel5, &DMA_InitStructure);    
+    
+    
+#else
       DMA_DeInit(DMA1_Channel2);
       DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_Addr;
       /* Set the DMA memory address */
-      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPI1_RX_Buff;
+      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPIx_RX_Buff;
       DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC; 
       /* A transmission number is set to buffersize */
       DMA_InitStructure.DMA_BufferSize = buffersize; 
@@ -166,7 +206,7 @@ void SPI1_DMA_Configuration( void )
       
       DMA_DeInit(DMA1_Channel3);
       DMA_InitStructure.DMA_PeripheralBaseAddr = SPI1_DR_Addr;
-      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPI1_TX_Buff;
+      DMA_InitStructure.DMA_MemoryBaseAddr = (u32)SPIx_TX_Buff;
       DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST; 
       DMA_InitStructure.DMA_BufferSize = buffersize; 
       
@@ -176,9 +216,9 @@ void SPI1_DMA_Configuration( void )
       DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte; 
       DMA_InitStructure.DMA_Mode = DMA_Mode_Normal; 
       DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
-      DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  //
-      DMA_Init(DMA1_Channel3, &DMA_InitStructure);  //  
-       
+      DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;  
+      DMA_Init(DMA1_Channel3, &DMA_InitStructure);    
+#endif       
   
 }
 
@@ -189,15 +229,61 @@ void SPI1_DMA_Configuration( void )
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SPI1_DMA_ReceiveSendByte( u16 num )
+void SPIx_DMA_ReceiveSendByte( u16 num )
 {
-  
-    
+      
     /* copy data to buff */
     for(u16 i = 0; i < num; i++)
     {
-        SPI1_TX_Buff[i] = SPI1_TX_Data[i];
+        SPIx_TX_Buff[i] = SPIx_TX_Data[i];
     }    
+
+#ifdef GEC_DBL2_MASTER
+    
+    waitus = 0;
+    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    {
+        waitus++;
+        delay_us(1);
+    }
+    
+    if( waitus >= 2000 )
+    {
+        /* TXE timeout! */
+    }
+      
+    DMA_Cmd(DMA1_Channel4, DISABLE);
+    DMA_Cmd(DMA1_Channel5, DISABLE);      
+    
+    DMA1_Channel4->CNDTR = 0x0000;	
+    DMA1_Channel4->CNDTR = num;
+    DMA1_Channel5->CNDTR = 0x0000;	
+    DMA1_Channel5->CNDTR = num;      
+    
+    
+    DMA_ClearFlag(DMA1_FLAG_GL5|DMA1_FLAG_TC5|DMA1_FLAG_HT5|DMA1_FLAG_TE5);
+    DMA_ClearFlag(DMA1_FLAG_GL4|DMA1_FLAG_TC4|DMA1_FLAG_HT4|DMA1_FLAG_TE4);
+      
+    /* Read once before the shuttle SPI1-> DR, ensure that the receiving buffer is empty */
+    SPI2->DR ;						
+      
+
+    waitus = 0;
+    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    {
+        waitus++;
+        delay_us(1);
+    }
+    
+    if( waitus >= 2000 )
+    {
+        /* TXE timeout! */
+    }
+    
+    DMA_Cmd(DMA1_Channel4, ENABLE);    
+    DMA_Cmd(DMA1_Channel5, ENABLE);
+
+#else
     
     waitus = 0;
     while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
@@ -240,8 +326,9 @@ void SPI1_DMA_ReceiveSendByte( u16 num )
     }
     
     DMA_Cmd(DMA1_Channel2, ENABLE);    
-    DMA_Cmd(DMA1_Channel3, ENABLE);
-      
+    DMA_Cmd(DMA1_Channel3, ENABLE);    
+    
+#endif
     
 }
 
@@ -257,6 +344,81 @@ void SPI1_DMA_ReceiveSendByte( u16 num )
 void DMA_Check_Flag(u32 times)
 {         
 
+#ifdef GEC_DBL2_MASTER
+    
+          waitus = 0;
+          /* 10us */
+          while( ( !DMA_GetFlagStatus(DMA1_IT_TC4) ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1);
+              EWDT_TOOGLE();
+              IWDG_ReloadCounter();  
+          }
+          
+          if( waitus >= times )
+          {
+              printf("DMA1_IT_TC2 wait timeout!!! \r\n");
+          }
+          waitus = 0;
+          while( ( !DMA_GetFlagStatus(DMA1_IT_TC5) ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1);
+          }
+          
+          if( waitus >= times )
+          {
+              printf("DMA1_IT_TC3 wait timeout!!! \r\n");
+          }
+          waitus = 0;
+          while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1);
+          }
+          
+          if( waitus >= times )
+          {             
+              printf("SPI_I2S_FLAG_TXE wait timeout!!! \r\n");
+          }
+          waitus = 0;
+          while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1);
+          }
+          
+          if( waitus >= times )
+          {              
+              printf("SPI_I2S_FLAG_BSY wait timeout!!! \r\n");
+          } 
+ 
+        DMA_ClearFlag(DMA1_FLAG_GL5|DMA1_FLAG_TC5|DMA1_FLAG_HT5|DMA1_FLAG_TE5);
+        DMA_Cmd(DMA1_Channel5, DISABLE); 
+        DMA_ClearFlag(DMA1_FLAG_GL4|DMA1_FLAG_TC4|DMA1_FLAG_HT4|DMA1_FLAG_TE4);        
+        DMA_Cmd(DMA1_Channel4, DISABLE);                 
+              
+          if( SPI_I2S_GetFlagStatus(SPI2, SPI_FLAG_CRCERR) != RESET)
+          {
+              SPI_I2S_ClearFlag(SPI2, SPI_FLAG_CRCERR);
+              
+              /* SPI CRC ERROR */
+              /* Channel4 CRCERR */
+              EN_ERROR_SYS4++;
+             
+              if(EN_ERROR_SYS4 > 2)
+              {
+                ESC_SPI_Error_Process();
+              }
+          }
+          else
+          {
+              EN_ERROR_SYS4 = 0;
+          }      
+          
+#else
+          
           waitus = 0;
           /* 10us */
           while( ( !DMA_GetFlagStatus(DMA1_IT_TC2) ) && ( waitus < times ) )
@@ -314,15 +476,12 @@ void DMA_Check_Flag(u32 times)
           {
               SPI_I2S_ClearFlag(SPI1, SPI_FLAG_CRCERR);
               
-              //SPI CRC ERROR
-              printf("Channel2 CRCERR \r\n");
+              /* SPI CRC ERROR */
+              /* Channel2 CRCERR */
               EN_ERROR_SYS4++;
-#ifdef GEC_DBL2_MASTER          
-              SPI1_Configuration();
-              delay_ms(200);
-#else
-              SPI1_Configuration();
-#endif              
+
+              SPIx_Configuration(SPI1);
+            
               if(EN_ERROR_SYS4 > 2)
               {
                 ESC_SPI_Error_Process();
@@ -331,12 +490,14 @@ void DMA_Check_Flag(u32 times)
           else
           {
               EN_ERROR_SYS4 = 0;
-          }        
+          }           
+          
+#endif
         
         /* copy buff to data */
         for(u16 i = 0; i < buffersize; i++)
         {
-            SPI1_RX_Data[i] = SPI1_RX_Buff[i];
+            SPIx_RX_Data[i] = SPIx_RX_Buff[i];
         }         
 }
 

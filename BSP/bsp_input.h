@@ -19,8 +19,10 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void Get_GpioInput(u8 inBuff[]);
-
-
+u8 ReadSwDp(void);
+#ifdef GEC_DBL2_SLAVE
+void output_driver(u8 out_buff[]);
+#endif
 
 #endif /* __BSP_INPUT_H */
 
