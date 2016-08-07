@@ -1,54 +1,27 @@
 /*******************************************************************************
-* File Name          : initial_devices.h
+* File Name          : max31856.h
 * Author             : lison
 * Version            : V1.0
-* Date               : 03/22/2016
-* Description        : Contains prototype of the devices initinal.
+* Date               : 08/07/2016
+* Description        : Contains the prototype of driver of max31856.
 *			          
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __INITIAL_DEVICES_H
-#define __INITIAL_DEVICES_H
+#ifndef __MAX31856_H
+#define __MAX31856_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
-#include "delay.h"    
-#include "led.h"
-#include "hw_test.h"
-#include "spi.h"
-#include "ewdt.h"
-#include "timer.h"
-#include "safety_test.h"
-#ifdef GEC_DBL2_SLAVE 
-#include "can.h"
-#include "adc.h"
-#include "max31856.h"
-#endif
-
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
-#define SELF_TEST       ( 0 )
-#define SYSTEMTICK      ( 5 )
-
 /* Exported functions ------------------------------------------------------- */
-void Initial_Device(void);
-void RCC_Configuration(void);
-void NVIC_Configuration(void);
+void SPI_MAX31856_Init(void);
+uint8_t SPI_MAX31856_Send(uint8_t dat);
 
-
-
-
-
-
-#endif  /* __INITIAL_DEVICES_H */
+#endif /* __MAX31856_H */
 
 
 /******************************  END OF FILE  *********************************/
-
-
-
-
-

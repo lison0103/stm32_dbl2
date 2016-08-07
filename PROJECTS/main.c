@@ -138,6 +138,7 @@ void Task_Loop(void)
       {   
 #ifdef GEC_DBL2_SLAVE
           CAN1_TX_Data[3] = Get_Adc_Average();
+          CAN1_TX_Data[4] = SPI_MAX31856_Send(0xaa);
 #endif
       }
            
