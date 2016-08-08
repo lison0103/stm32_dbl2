@@ -20,7 +20,7 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-int EscBuff[10] = {0};
+int ErrorBuff[10] = {0};
 
 
 /*******************************************************************************
@@ -63,10 +63,7 @@ void ESC_EWDT_Error_Process(void)
 *******************************************************************************/
 void ESC_SPI_Error_Process(void)
 {
-  
-    /** Disconnect the safety relay **/
-//    SF_RL_CTR_CLR();
-//    SF_RL_WDT_CLR();
-    printf("ESC_SPI_Error_Process \r\n");
+
+    /* ESC_SPI_Error_Process */
 }
 

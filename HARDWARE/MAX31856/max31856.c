@@ -157,7 +157,7 @@ uint8_t SPI_MAX31856_Send(uint8_t dat)
     /* Return the byte read from the SPI bus */
     return SPI_ReceiveData8(SPI_MAX31856_SPI);
         
-          //SPI_MAX31856_CS_HIGH();
+//          SPI_MAX31856_CS_HIGH();
 }
 
 void SPI_MAX31856_SendEx(uint8_t dat)        

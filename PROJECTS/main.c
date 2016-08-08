@@ -33,14 +33,9 @@ u8 testmode = 0;
 u8 Modbuff[3000];
 u8 EscRTBuff[200];
 u8 McRxBuff[1000];
-u8 *const Sys_Data = &Modbuff[1100];
-u16 *const pt_SysBuff = (u16*)&Modbuff[1100];
 u8 *const pcOMC_EscRTBuff = &McRxBuff[0]; 
 u8 *const pcOmcErrorBuff = &McRxBuff[70];
 u8 *const pcErrorBuff = &EscRTBuff[70];
-u8 *const pcEscErrorCodeBuff = &Modbuff[454];
-u8 *const pcEscErrorBuff = &Modbuff[468];
-u16 pcOMC_SfBase_EscState;
 
 /*******************************************************************************
 * Function Name  : LED_indicator
@@ -137,8 +132,8 @@ void Task_Loop(void)
       if( Tms100Counter == 0 )
       {   
 #ifdef GEC_DBL2_SLAVE
-          CAN1_TX_Data[3] = Get_Adc_Average();
-          CAN1_TX_Data[4] = SPI_MAX31856_Send(0xaa);
+          CAN1_TX_Data[2] = Get_Adc_Average();
+          CAN1_TX_Data[3] = SPI_MAX31856_Send(0xaa);
 #endif
       }
            

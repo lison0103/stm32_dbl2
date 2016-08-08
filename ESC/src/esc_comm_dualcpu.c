@@ -14,9 +14,6 @@
 #include "esc_error_process.h"
 #include "bsp_iocfg.h"
 #include "initial_devices.h"
-#ifdef GEC_DBL2_MASTER  
-#include "can.h"
-#endif
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -94,7 +91,7 @@ void Send_state_to_CPU(void)
 *******************************************************************************/
 void Receive_state_from_CPU(void)
 {
-    if( recvlen == 102 )
+    if( recvlen == 100 )
     {
         /* 1. esc Rtdata receive--------------------------*/
         for( u8 i = 0; i < 100; i++)
@@ -116,7 +113,7 @@ void Receive_IO_status_from_CPU(void)
 {
       static u8 receive_io_error = 0;
     
-      for( u8 i = 4; i < 12; i++ )
+      for( u8 i = 4; i < 8; i++ )
       {
           if( pcOMC_EscRTBuff[i] != EscRTBuff[i] )
           {
@@ -153,7 +150,7 @@ void CPU_Comm(void)
         onetime++;
 
         Send_state_to_CPU();
-        CPU_Exchange_Data(cpu_senddata_buffer, 102);
+        CPU_Exchange_Data(cpu_senddata_buffer, 100);
     }
     else
     {
@@ -161,7 +158,7 @@ void CPU_Comm(void)
         Receive_state_from_CPU();
                
         Send_state_to_CPU();        
-        CPU_Exchange_Data(cpu_senddata_buffer, 102);
+        CPU_Exchange_Data(cpu_senddata_buffer, 100);
     }
 #else  
     comm_timeout--;
@@ -182,7 +179,7 @@ void CPU_Comm(void)
         Receive_state_from_CPU();
                 
         Send_state_to_CPU();
-        CPU_Exchange_Data(cpu_senddata_buffer, 102);
+        CPU_Exchange_Data(cpu_senddata_buffer, 100);
         
         EN_ERROR7 &= ~0x01;
     }   
