@@ -38,11 +38,11 @@
 #define SPI_MAX31856_SPI_MOSI_SOURCE               GPIO_PinSource15
 
 #define SPI_MAX31856_CS_PIN                        GPIO_Pin_9                 /* PA.9 */
-#define SPI_MAX31856_CS_GPIO_PORT                  GPIOB                       /* GPIOA */
+#define SPI_MAX31856_CS_GPIO_PORT                  GPIOA                       /* GPIOA */
 #define SPI_MAX31856_CS_GPIO_CLK                   RCC_AHBPeriph_GPIOA
 
 #define SPI_MAX31856_DR_PIN                        GPIO_Pin_8                  /* PA.8 */
-#define SPI_MAX31856_DR_GPIO_PORT                  GPIOC                       /* GPIOA */
+#define SPI_MAX31856_DR_GPIO_PORT                  GPIOA                       /* GPIOA */
 #define SPI_MAX31856_DR_GPIO_CLK                   RCC_AHBPeriph_GPIOA
 
 /* Exported macro ------------------------------------------------------------*/

@@ -100,75 +100,75 @@ void Input_Output_PinInit(void)
 
       
       /** SAFETY switch input gpio ----------------------------------------- **/
-      /* SFSW_INA1 */
+      /* SFSW_INA1 1*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
       GPIO_Init(GPIOA , &GPIO_InitStruct);   
 
-      /* SFSW_INA2 */
+      /* SFSW_INA2 6*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
       GPIO_Init(GPIOC , &GPIO_InitStruct);   
 
-      /* SFSW_INA3 */
+      /* SFSW_INA3 11*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA4 */
+      /* SFSW_INA4 15*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA5 */
+      /* SFSW_INA5 2*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
       GPIO_Init(GPIOA , &GPIO_InitStruct);   
 
-      /* SFSW_INA6 */
+      /* SFSW_INA6 7*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INA7 */
+      /* SFSW_INA7 12*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA8 */
+      /* SFSW_INA8 16*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA9 */
+      /* SFSW_INA9 3*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
       GPIO_Init(GPIOA , &GPIO_InitStruct);   
 
-      /* SFSW_INA10 */
+      /* SFSW_INA10 8*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INA11 */
+      /* SFSW_INA11 13*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
       GPIO_Init(GPIOE , &GPIO_InitStruct);         
 
-      /* SFSW_INA12 */
+      /* SFSW_INA12 17*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA13 */
+      /* SFSW_INA13 4*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
       GPIO_Init(GPIOA , &GPIO_InitStruct); 
 
-      /* SFSW_INA14 */
+      /* SFSW_INA14 9*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INA15 */
+      /* SFSW_INA15 14*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
       GPIO_Init(GPIOE , &GPIO_InitStruct); 
 
-      /* SFSW_INA16 */
+      /* SFSW_INA16 18*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_15;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INA17 */
+      /* SFSW_INA17 5*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
       GPIO_Init(GPIOC , &GPIO_InitStruct); 
 
-      /* SFSW_INA18 */
+      /* SFSW_INA18 10*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
       GPIO_Init(GPIOE , &GPIO_InitStruct);       
 
@@ -196,7 +196,45 @@ void Input_Output_PinInit(void)
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;                  
       GPIO_Init(GPIOE , &GPIO_InitStruct); 
   
+      /** SINA_BUSY_BA -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10; 
+      GPIO_Init(GPIOD , &GPIO_InitStruct);  
+
+      /** SYNC_SYS_BA -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8; 
+      GPIO_Init(GPIOD , &GPIO_InitStruct);           
+
+      /** Safety switch output gpio ---------------------------------------- **/
+      GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+
+      /* SFSW_C_A1 */
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;                  
+      GPIO_Init(GPIOE , &GPIO_InitStruct);      
       
+      /* SFSW_C_A2 */
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;                  
+      GPIO_Init(GPIOE , &GPIO_InitStruct);        
+
+      /* SFSW_C_A3 */
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;                  
+      GPIO_Init(GPIOE , &GPIO_InitStruct);       
+
+      /* SFSW_C_A4 */
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;                  
+      GPIO_Init(GPIOB , &GPIO_InitStruct);        
+
+      /* SFSW_C_A5 */
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;                  
+      GPIO_Init(GPIOE , &GPIO_InitStruct); 
+      
+      /** SINA_BUSY_AB -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11; 
+      GPIO_Init(GPIOD , &GPIO_InitStruct);  
+
+      /** SYNC_SYS_AB -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9; 
+      GPIO_Init(GPIOD , &GPIO_InitStruct);  
+
       
 #else
       
@@ -267,75 +305,75 @@ void Input_Output_PinInit(void)
 
       
       /** SAFETY switch input gpio ----------------------------------------- **/
-      /* SFSW_INB1 */
+      /* SFSW_INB1 1*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
       GPIO_Init(GPIOA , &GPIO_InitStruct);   
 
-      /* SFSW_INB2 */
+      /* SFSW_INB2 6*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INB3 */
+      /* SFSW_INB3 11*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB4 */
+      /* SFSW_INB4 15*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_14;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB5 */
+      /* SFSW_INB5 2*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
       GPIO_Init(GPIOA , &GPIO_InitStruct);   
 
-      /* SFSW_INB6 */
+      /* SFSW_INB6 7*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INB7 */
+      /* SFSW_INB7 12*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB8 */
+      /* SFSW_INB8 16*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_15;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB9 */
+      /* SFSW_INB9 3*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_4;
       GPIO_Init(GPIOC , &GPIO_InitStruct);   
 
-      /* SFSW_INB10 */
+      /* SFSW_INB10 8*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB11 */
+      /* SFSW_INB11 13*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_12;
       GPIO_Init(GPIOE , &GPIO_InitStruct);         
 
-      /* SFSW_INB12 */
+      /* SFSW_INB12 17*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INB13 */
+      /* SFSW_INB13 4*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
       GPIO_Init(GPIOC , &GPIO_InitStruct); 
 
-      /* SFSW_INB14 */
+      /* SFSW_INB14 9*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
       GPIO_Init(GPIOE , &GPIO_InitStruct);   
 
-      /* SFSW_INB15 */
+      /* SFSW_INB15 14*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_13;
       GPIO_Init(GPIOE , &GPIO_InitStruct); 
 
-      /* SFSW_INB16 */
+      /* SFSW_INB16 18*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_11;
       GPIO_Init(GPIOB , &GPIO_InitStruct);   
 
-      /* SFSW_INB17 */
+      /* SFSW_INB17 5*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0;
       GPIO_Init(GPIOB , &GPIO_InitStruct); 
 
-      /* SFSW_INB18 */
+      /* SFSW_INB18 10*/
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
       GPIO_Init(GPIOE , &GPIO_InitStruct);       
 
@@ -363,7 +401,15 @@ void Input_Output_PinInit(void)
       /* SFSW_C_F_B5 */
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;                  
       GPIO_Init(GPIOE , &GPIO_InitStruct); 
- 
+
+      /** SINA_BUSY_AB -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_0; 
+      GPIO_Init(GPIOC , &GPIO_InitStruct);  
+
+      /** SYNC_SYS_AB -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3; 
+      GPIO_Init(GPIOC , &GPIO_InitStruct);  
+      
       
       /** Safety switch output gpio ---------------------------------------- **/
       GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUT;
@@ -422,7 +468,15 @@ void Input_Output_PinInit(void)
 
       /* TRAN_OC3 */
       GPIO_InitStruct.GPIO_Pin = GPIO_Pin_15;                  
-      GPIO_Init(GPIOD , &GPIO_InitStruct);        
+      GPIO_Init(GPIOD , &GPIO_InitStruct);     
+      
+      /** SINA_BUSY_BA -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1; 
+      GPIO_Init(GPIOC , &GPIO_InitStruct);  
+
+      /** SYNC_SYS_BA -------------------------------------------------- **/
+      GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2; 
+      GPIO_Init(GPIOA , &GPIO_InitStruct);      
       
 #endif      
 
