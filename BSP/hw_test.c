@@ -301,8 +301,8 @@ void HardwareTEST(void)
     testdata1[0] = 0xf1;
     for( u8 i = 1; i < 10 ; i++ )
     {
-        CAN1_TX_Data[i] = i + 0x90;
-        testdata1[i] = i + 0x90;       
+        CAN1_TX_Data[i] = i + 0xa0;
+        testdata1[i] = i + 0xa0;       
     }
     BSP_CAN_Send(CAN1, &CAN1_TX_Normal, CAN1_TEST_ID, CAN1_TX_Data, 10);
     
@@ -361,11 +361,10 @@ void HardwareTEST(void)
             
             if( testerror == 0 )
             {
-                if( ( CAN1_RX_Data[1] == 0xc1 ) 
-                   || ( CAN1_RX_Data[1] == 0xf1 ) )
+                if( CAN1_RX_Data[1] == 0xb1 )
                 {
                     testmode = 1;
-                }
+                }               
             }
         } 
         
@@ -378,7 +377,7 @@ void HardwareTEST(void)
     }
     
     /* no CAN */
-    testmode = 1;
+//    testmode = 1;
     /*********/
     
     senddata[0] = 0xbc;
