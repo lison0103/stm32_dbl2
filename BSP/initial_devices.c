@@ -79,8 +79,8 @@ void Initial_Device(void)
         /* ADC init, measure the sf_in voltage */
         Adc_Init();
         
-        /* MAX31856 init */
-        SPI_MAX31856_Init();
+        /* MAX31865 init */
+//        SPI_MAX31865_Init();
         
 #else
         /* wait for CPU2 */
@@ -99,7 +99,7 @@ void Initial_Device(void)
         CrossCommCPUCheck();
            
         /* HardwareTest */
-        HardwareTEST();        
+//        HardwareTEST();        
 
         /** pluse output init **/
         PluseOutputInit();        

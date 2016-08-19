@@ -1,15 +1,15 @@
 /*******************************************************************************
-* File Name          : max31856.h
+* File Name          : max31865.h
 * Author             : lison
 * Version            : V1.0
 * Date               : 08/07/2016
-* Description        : Contains the prototype of driver of max31856.
+* Description        : Contains the prototype of driver of max31865.
 *			          
 *******************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAX31856_H
-#define __MAX31856_H
+#ifndef __MAX31865_H
+#define __MAX31865_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
@@ -18,10 +18,11 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void SPI_MAX31856_Init(void);
-uint8_t SPI_MAX31856_Send(uint8_t dat);
+u8 SPI_MAX31865_Init(void);
+void SPI_MAX31865_Write(u8 address, u8 value);
+uint16_t SPI_MAX31865_Read(u8 address);
 
-#endif /* __MAX31856_H */
+#endif /* __MAX31865_H */
 
 
 /******************************  END OF FILE  *********************************/

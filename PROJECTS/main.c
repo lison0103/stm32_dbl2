@@ -132,8 +132,9 @@ void Task_Loop(void)
       if( Tms100Counter == 0 )
       {   
 #ifdef GEC_DBL2_SLAVE
-          CAN1_TX_Data[2] = Get_Adc_Average();
-          CAN1_TX_Data[3] = SPI_MAX31856_Send(0xaa);
+          CAN1_TX_Data[2] = Get_Adc_Average(1);
+          CAN1_TX_Data[3] = Get_Adc_Average(2);
+//          CAN1_TX_Data[3] = SPI_MAX31865_Send(0xaa);
 #endif
       }
            

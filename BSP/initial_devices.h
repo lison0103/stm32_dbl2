@@ -23,7 +23,7 @@
 #ifdef GEC_DBL2_SLAVE 
 #include "can.h"
 #include "adc.h"
-#include "max31856.h"
+#include "max31865.h"
 #endif
 
 

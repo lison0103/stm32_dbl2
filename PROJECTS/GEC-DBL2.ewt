@@ -2322,7 +2322,7 @@
       <name>$PROJ_DIR$\..\HARDWARE\LED\led.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\HARDWARE\MAX31856\max31856.c</name>
+      <name>$PROJ_DIR$\..\HARDWARE\MAX31865\max31865.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\HARDWARE\SPI\spi.c</name>
