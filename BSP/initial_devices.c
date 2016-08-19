@@ -101,6 +101,7 @@ void Initial_Device(void)
         /* HardwareTest */
 //        HardwareTEST();        
 
+
         /** pluse output init **/
         PluseOutputInit();        
         

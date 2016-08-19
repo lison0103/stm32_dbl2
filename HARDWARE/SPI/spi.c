@@ -73,14 +73,17 @@ void SPIx_Configuration(SPI_TypeDef* SPIx)
 	SPI_InitStructure.SPI_CRCPolynomial = 7;	                        
 	SPI_Init(SPIx, &SPI_InitStructure);   
         
- 
+#ifdef GEC_DBL2_SLAVE 
+        SPI_RxFIFOThresholdConfig(SPIx, SPI_RxFIFOThreshold_QF);
+#endif
+        
         //DMA 
         SPIx_DMA_Configuration();       
         SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Tx, ENABLE);
         SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Rx, ENABLE);
            
         //CRC
-//        SPI_CalculateCRC(SPIx, ENABLE);
+        SPI_CalculateCRC(SPIx, ENABLE);
         
         //SPI enable
 	SPI_Cmd(SPIx, ENABLE); 
