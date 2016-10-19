@@ -80,7 +80,7 @@ void Initial_Device(void)
         Adc_Init();
         
         /* MAX31865 init */
-//        SPI_MAX31865_Init();
+        SPI_MAX31865_Init();
         
 #else
         /* wait for CPU2 */

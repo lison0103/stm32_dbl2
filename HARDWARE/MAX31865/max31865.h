@@ -20,7 +20,7 @@
 /* Exported functions ------------------------------------------------------- */
 u8 SPI_MAX31865_Init(void);
 void SPI_MAX31865_Write(u8 address, u8 value);
-uint16_t SPI_MAX31865_Read(u8 address);
+uint8_t SPI_MAX31865_Read(u8 address);
 
 #endif /* __MAX31865_H */
 
