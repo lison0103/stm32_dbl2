@@ -15,62 +15,54 @@
 #include "sys.h"
 
 /* Exported types ------------------------------------------------------------*/
-typedef struct  {
-  u8 sending;
-  u8* p_CanBuff;
-  s16 mlen;
-  u8 tx_buff[200];
-} CAN_TX_DATA_PROCESS_TypeDef;
-
-typedef struct  {
-  u8 recving;
-  s16 rxcnt;
-  s16 mlen;
-  u8 data_packet;
-  u8 recv_cnt;
-  u8 recv_len;
-  u8 rx_buff[200];
-} CAN_RX_DATA_PROCESS_TypeDef;
-
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 #define canbuffsize 120
 
-/* SAFETY TO CONTROL  Speed: 500kbps  Message ID 100: transmitted every 20ms */
-/* CONTROL TO SAFETY  Speed: 500kbps  Message ID 200: transmitted every 20ms */
-#define CAN1TX_NORMAL_ID  0x0064
-#define CAN1RX_NORMAL_ID  0x00C8
-#define CAN1TX_URGE_ID    0x0062  
+#define CAN_FRAME_LEN   8u
+#define CAN_SEND_LEN    3u*CAN_FRAME_LEN
+  
+#define CAN1_TEST_ID  0xfaf1u
 
-#define CAN2TX_UP_ID    0x1234
-#define CAN2RX_UP_ID    0x3456
-#define CAN2TX_DOWN_ID  0x2345
-#define CAN2RX_DOWN_ID  0x3488
-#define CAN1_TEST_ID  0xfaf1
+/* SF <---> DBL2 */
+#define CAN1TX_DBL2_UPPER_ID1  0x40u
+#define CAN1TX_DBL2_UPPER_ID2  0x41u
+#define CAN1TX_DBL2_UPPER_ID3  0x42u
+#define CAN1TX_DBL2_LOWER_ID1  0x64u
+#define CAN1TX_DBL2_LOWER_ID2  0x65u
+#define CAN1TX_DBL2_LOWER_ID3  0x66u
+#define CAN1TX_DBL2_INTERM1_ID1  0x88u
+#define CAN1TX_DBL2_INTERM1_ID2  0x89u
+#define CAN1TX_DBL2_INTERM1_ID3  0x8Au
+#define CAN1TX_DBL2_INTERM2_ID1  0xACu
+#define CAN1TX_DBL2_INTERM2_ID2  0xADu
+#define CAN1TX_DBL2_INTERM2_ID3  0xAEu
+
+#define CAN1TX_DBL2_UPPER_NONSAFETY_ID  0xC1u
+#define CAN1TX_DBL2_LOWER_NONSAFETY_ID  0xC2u
+#define CAN1TX_DBL2_INTERM1_NONSAFETY_ID  0xC3u
+#define CAN1TX_DBL2_INTERM2_NONSAFETY_ID  0xC4u
+
+#define CAN1RX_SAFETY_DBL2_UPPER_ID1  0x20u
+#define CAN1RX_SAFETY_DBL2_UPPER_ID2  0x21u
+#define CAN1RX_SAFETY_DBL2_LOWER_ID1  0x24u
+#define CAN1RX_SAFETY_DBL2_LOWER_ID2  0x25u
+#define CAN1RX_SAFETY_DBL2_INTERM1_ID1  0x28u
+#define CAN1RX_SAFETY_DBL2_INTERM1_ID2  0x29u
+#define CAN1RX_SAFETY_DBL2_INTERM2_ID1  0x2Cu
+#define CAN1RX_SAFETY_DBL2_INTERM2_ID2  0x2Du
+
 
 /* Exported functions ------------------------------------------------------- */
 u8 CAN_Int_Init(CAN_TypeDef* CANx); 
-u8 Can_Send_Msg(CAN_TypeDef* CANx,u32 exid,u8* msg,u8 len);			
-u8 Can_Receive_Msg(CAN_TypeDef* CANx,u8 *buf);					
-void BSP_CAN_Send(CAN_TypeDef* CANx, CAN_TX_DATA_PROCESS_TypeDef* CanTx, uint32_t send_id, uint8_t *buff, uint32_t len);
-uint32_t BSP_CAN_Receive(CAN_TypeDef* CANx,CAN_RX_DATA_PROCESS_TypeDef* CanRx, uint8_t *buff,uint32_t mlen);
-
-/* CAN1 */
-extern u8 CAN1_TX_Data[canbuffsize];
-extern u8 CAN1_RX_Data[canbuffsize];
-extern u8 CAN1_TX2_Data[canbuffsize];
-extern u8 CAN1_RX2_Data[canbuffsize];
-
+u8 Can_Send_Msg(CAN_TypeDef* CANx,u32 exid,u8 msg[],u8 len);			
+u8 Can_Receive_Msg(CAN_TypeDef* CANx,u8 buf[]);					
+void Can_Receive_Data(void);
+void Can_Clean_Buffer(void);
+void Can_SetFilter(u16 CAN_Filter_ID1, u16 CAN_Filter_ID2);
 
 extern u8 can1_receive;
 
-
-extern CAN_TX_DATA_PROCESS_TypeDef  CAN1_TX_Normal;
-extern CAN_TX_DATA_PROCESS_TypeDef  CAN1_TX_Urge;
-
-extern CAN_RX_DATA_PROCESS_TypeDef  CAN1_RX_Normal;
-
-				
 #endif  /* __CAN_H */
 
 

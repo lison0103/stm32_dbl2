@@ -3,6 +3,7 @@
 * Author             : lison
 * Version            : V1.0
 * Date               : 08/07/2016
+* Last modify date   : 10/27/2016
 * Description        : Contains the driver of max31865.
 *                      
 *******************************************************************************/
@@ -14,12 +15,32 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
-u8 SPI_ReadWriteByte(u8 TxData);
+/**
+ * Configuration of the MAX31865 from MSB to LSB:
+ * BIT      FUNCTION            ASSIGNMENT
+ *  7       VBIAS               0=OFF            1=ON
+ *  6       Conversion Mode     0=Normally OFF   1=AUTO
+ *  5       1-Shot              0= -             1=1-Shot
+ *  4       3-Wire              0=2- or 4-Wire   1=3-wire
+ * 3,2      Faultdetection      set both to 0
+ *  1       Fault Status Clear  set to 1
+ *  0       50/60Hz filter      0=60Hz           1=50Hz
+ */
+#define Configuration  0x80u 						
+#define Read_Configuration  0x00u 
+#define Read_RTD_MSB  0x01u 
+#define Read_RTD_LSB  0x02u 
+#define Write_High_Fault_Threshold_MSB  0x83u 
+#define Write_High_Fault_Threshold_LSB  0x84u 
+#define Read_High_Fault_Threshold_MSB  0x03u 
+#define Read_High_Fault_Threshold_LSB  0x04u 
+#define Write_Low_Fault_Threshold_MSB  0x85u 
+#define Write_Low_Fault_Threshold_LSB  0x86u 
+#define Read_Low_Fault_Threshold_MSB  0x05u 
+#define Read_Low_Fault_Threshold_LSB  0x06u 
+#define Fault_Status  0x07u 
 
+/* Private macro -------------------------------------------------------------*/
 #define SPI_MAX31865_SPI                           SPI2
 #define SPI_MAX31865_SPI_CLK                       RCC_APB1Periph_SPI2
 
@@ -46,236 +67,22 @@ u8 SPI_ReadWriteByte(u8 TxData);
 #define SPI_MAX31865_DR_GPIO_PORT                  GPIOA                       /* GPIOA */
 #define SPI_MAX31865_DR_GPIO_CLK                   RCC_AHBPeriph_GPIOA
 
-/* Exported macro ------------------------------------------------------------*/
-/* Select SPI MAX31865: Chip Select pin low  */
 #define SPI_MAX31865_CS_LOW()       GPIO_ResetBits(SPI_MAX31865_CS_GPIO_PORT, SPI_MAX31865_CS_PIN)
-
-/* Deselect SPI MAX31865: Chip Select pin high */
 #define SPI_MAX31865_CS_HIGH()      GPIO_SetBits(SPI_MAX31865_CS_GPIO_PORT, SPI_MAX31865_CS_PIN)
 
+/* Reference Resistor */
+#define  Reference_Resistor     1000u
+/* RTD Resistance at 0 Degrees */
+#define  RTD_Resistance         100u
 
-
-
-/**********************************************************
-* 函数功能 ---> 模拟SPI初始化GPIO
-* 入口参数 ---> none
-* 返回参数 ---> none
-* 功能说明 ---> none 
-**********************************************************/
-void Soft_SPI_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA, ENABLE);	 //使能PA端口时钟   
-        RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOB, ENABLE);	 //使能PA端口时钟 
-    	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;  //CLK and MOSI
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-        GPIO_Init(GPIOB, &GPIO_InitStructure);  //初始化指定IO，CLK and MOSI
-        
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-    
- 	GPIO_Init(GPIOA, &GPIO_InitStructure);  //初始化指定IO，CLK and MOSI
- 	
-
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;   //MISO
- 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-        GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);  //初始化指定IO，MISO
-
-    GPIO_ResetBits(GPIOB, GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15);    //设置低电平
-}
-
-
-#define Soft_SPI_MISO_IN()          {GPIOB->MODER &= 0xcfffffff;GPIOB->PUPDR &= 0xcfffffff;GPIOB->PUPDR |= 1<<28;}
-/**********************************************************
-* 函数功能 ---> 模拟SPI发送数据函数
-* 入口参数 ---> send_data: 要发送的数据
-* 返回参数 ---> 接收到的数据
-* 功能说明 ---> 优先发送MSB，需要先发送LSB的请修改此函数
-**********************************************************/
-u8 Soft_SPI_ReadWrite_Byte(u8 send_data)
-{
-    u8 i;
-    u8 rcv;
-
-    GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_SET);
-//    Soft_SPI_MISO_IN(); //设置MISO为输入模式
-
-    for(i = 0;i < 8;i++)
-    {
-        if(send_data & 0x80)    GPIO_WriteBit(GPIOB, GPIO_Pin_15, Bit_SET);  //放上数据
-        else    GPIO_WriteBit(GPIOB, GPIO_Pin_15, Bit_RESET);
-
-        send_data <<= 1;
-        rcv <<= 1;
-
-        GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_RESET);
-        GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_RESET);
-        GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_RESET);
-        GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_SET);   //上升沿发送数据
-
-        if(GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14))   
-            rcv |= 0x01;  //返回来的是"1"
-        
-//        Soft_SPI_CLK = 0;
-    }
-    GPIO_WriteBit(GPIOB, GPIO_Pin_13, Bit_SET);
-//    return send_data;   //返回接收到的数据
-    return rcv;
-}
-
-
-#define Set_Max_CS(a)   if(a) \
-                        GPIO_SetBits(GPIOA,GPIO_Pin_9); \
-                        else \
-                        GPIO_ResetBits(GPIOA,GPIO_Pin_9)
-#define Set_Max_CLK(a)  if(a) \
-                        GPIO_SetBits(GPIOB,GPIO_Pin_13); \
-                        else \
-                        GPIO_ResetBits(GPIOB,GPIO_Pin_13)
-#define Set_Max_Din(a)  if(a) \
-                        GPIO_SetBits(GPIOB,GPIO_Pin_15); \
-                        else \
-                        GPIO_ResetBits(GPIOB,GPIO_Pin_15)
-#define Read_InData()   GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_14)
-                            
-#define   ON   1
-#define   OFF  0
-uint8_t Send_Read_Byte(uint8_t Address);
-void Send_Write_Byte(uint8_t Address,uint8_t Data);                            
-//====================================================================
-//===MAX31865初始化===//
-void Temp_GPIO_Init(void)
-{
-    GPIO_InitTypeDef  GPIO_InitStructure;
-    
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOA| \
-                              RCC_AHBPeriph_GPIOB,ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;//
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-    GPIO_Init(GPIOA,&GPIO_InitStructure);
-    GPIO_SetBits(GPIOA,GPIO_Pin_9);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13|GPIO_Pin_15;//
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-    GPIO_Init(GPIOB,&GPIO_InitStructure);
-    GPIO_ResetBits(GPIOB,GPIO_Pin_13|GPIO_Pin_15);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;//定义GPIOA_15脚
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;    //输入模式
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_10MHz;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_Init(GPIOB,&GPIO_InitStructure);
-
-//    Send_Write_Byte(0x80,0xc1);//初始化
-    
-    u8 read_value = 1;
-
-    while(read_value != 0xc1)
-    {
-        Send_Write_Byte( 0x80,0xc1 );
-//        
-//        delay_us(50);
-        
-        read_value = Send_Read_Byte(0x00);
-        
-        delay_ms(10);
-        
-    }    
-}
-//====================================================================
-//===写数据===//
-void Send_Write_Byte(uint8_t Address,uint8_t Data)
-{
-    uint8_t i;
-    Set_Max_CLK(ON);
-    Set_Max_CS(OFF);
-    for(i = 0;i < 8;i++)
-    {        
-        if((Address & 0x80) == 0x80)
-        {
-            Set_Max_Din(ON);
-        }
-        else
-        {
-            Set_Max_Din(OFF);
-        }
-        Set_Max_CLK(OFF);
-        Set_Max_CLK(ON);
-        Address <<= 1;
-    }
-    for(i = 0;i < 8;i++)
-    {
-        
-        if((Data & 0x80) == 0x80)
-        {
-            Set_Max_Din(ON);
-        }
-        else
-        {
-            Set_Max_Din(OFF);
-        }
-        Set_Max_CLK(OFF);
-        Set_Max_CLK(ON);
-        Data <<= 1;
-    }
-    Set_Max_CLK(ON);
-    Set_Max_CS(ON);
-}
-//====================================================================
-//===读数据===//
-uint8_t Send_Read_Byte(uint8_t Address)
-{
-    uint8_t i,Temp=0;
-    Set_Max_CLK(ON);
-    Set_Max_CS(OFF);
-    for(i = 0;i < 8;i++)
-    {
-        
-        if((Address & 0x80) == 0x80)
-        {
-            Set_Max_Din(ON);
-        }
-        else
-        {
-            Set_Max_Din(OFF);
-        }
-        Set_Max_CLK(OFF);
-        Set_Max_CLK(ON);
-        Address <<= 1;
-    }
-    for(i = 0;i < 8;i++)
-    {
-        Temp <<= 1;
-        if(Read_InData() != RESET)
-        {
-            Temp |= 0x01;
-        }
-        else
-        {
-            Temp &= 0xfe;
-        }
-        Set_Max_CLK(OFF);
-        Set_Max_CLK(ON);
-    }
-    Set_Max_CLK(ON);
-    Set_Max_CS(ON);
-    return Temp;
-}
+/* Private variables ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+/* Private functions ---------------------------------------------------------*/
+static u8 SPI_ReadWriteByte(u8 TxData);
+static void SPI_MAX31865_Write(u8 address, u8 value);
+static u8 SPI_MAX31865_Read(u8 address);
+static u8 get_Temperature(void);
+static u8 max31865_setup(void);
 
 
 /*******************************************************************************
@@ -287,8 +94,8 @@ uint8_t Send_Read_Byte(uint8_t Address)
 *******************************************************************************/
 u8 SPI_MAX31865_Init(void)
 {
-
-  
+    u8 result = 0u;
+    
     SPI_InitTypeDef  SPI_InitStructure;
     GPIO_InitTypeDef GPIO_InitStructure;
     
@@ -344,11 +151,8 @@ u8 SPI_MAX31865_Init(void)
     GPIO_PinAFConfig(SPI_MAX31865_SPI_MISO_GPIO_PORT, SPI_MAX31865_SPI_MISO_SOURCE, GPIO_AF_5);
     GPIO_PinAFConfig(SPI_MAX31865_SPI_MOSI_GPIO_PORT, SPI_MAX31865_SPI_MOSI_SOURCE, GPIO_AF_5);    
     
-
     
     /* SPI2 configuration */
-    /* SPI ADS1118: data input on the DIO pin is sampled on the rising edge of the CLK. 
-    Data on the DO and DIO pins are clocked out on the falling edge of CLK.*/
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;       
     SPI_InitStructure.SPI_Mode = SPI_Mode_Master;                                                                
     SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;                                                                   
@@ -362,57 +166,15 @@ u8 SPI_MAX31865_Init(void)
 
     SPI_RxFIFOThresholdConfig(SPI_MAX31865_SPI, SPI_RxFIFOThreshold_QF);
     
-    /* Enable SPI1  */
+    /* Enable SPI  */
     SPI_Cmd(SPI_MAX31865_SPI, ENABLE);
-//    Soft_SPI_Init();
-//    SPI_MAX31865_CS_HIGH();
     
-    /* wait for MAX31865 to set up */
-    delay_ms(200);
+
+    result = max31865_setup();
     
-//    Temp_GPIO_Init();
-
-    u8 read_value = 1;
-
-    while(read_value != 0xc2)
-    {
-        SPI_MAX31865_Write( 0x80,0xc2 );
-        
-        delay_us(50);
-        
-        read_value = SPI_MAX31865_Read(0x00);
-        
-        delay_ms(10);
-        
-    }
-    
-    return 1;
-
+    return result;
 }
 
-
-
-/**
-  * @brief  Sends a byte through the SPI interface and return the byte received
-  *         from the SPI bus.
-  * @param  byte: byte to send.
-  * @retval The value of the received byte.
-  */
-uint8_t sEE_SendByte(uint8_t value)
-{
-  /*!< Loop while DR register in not empty */
-  while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_TXE) == RESET);
-
-  /*!< Send byte through the SPI peripheral */
-  SPI_SendData8(SPI_MAX31865_SPI, value);
-  
-
-  /*!< Wait to receive a byte */
-  while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_RXNE) == RESET);
-
-  /*!< Return the byte read from the SPI bus */
-  return SPI_ReceiveData8(SPI_MAX31865_SPI);
-}
 
 
 /*******************************************************************************
@@ -422,7 +184,7 @@ uint8_t sEE_SendByte(uint8_t value)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-u8 SPI_ReadWriteByte(u8 TxData)
+static u8 SPI_ReadWriteByte(u8 TxData)
 {		
 	u16 retry=0;				 
 	while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_TXE) == RESET)		
@@ -456,11 +218,11 @@ u8 SPI_ReadWriteByte(u8 TxData)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SPI_MAX31865_Write(u8 address, u8 value)         
+static void SPI_MAX31865_Write(u8 address, u8 value)         
 {
     SPI_MAX31865_CS_LOW();   
-    sEE_SendByte(address);                   
-    sEE_SendByte(value); 
+    SPI_ReadWriteByte(address);                   
+    SPI_ReadWriteByte(value); 
     SPI_MAX31865_CS_HIGH();
 }
 
@@ -471,18 +233,114 @@ void SPI_MAX31865_Write(u8 address, u8 value)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-uint8_t SPI_MAX31865_Read(u8 address)         
+static u8 SPI_MAX31865_Read(u8 address)         
 {
     u8 value = 0;
     
     SPI_MAX31865_CS_LOW();  
-    sEE_SendByte(address);                   
-    value = sEE_SendByte(0x00);   
+    SPI_ReadWriteByte(address);                   
+    value = SPI_ReadWriteByte(0x00);   
     SPI_MAX31865_CS_HIGH();
     
     return value;
 }
 
 
+/*******************************************************************************
+* Function Name  : max31865_setup
+* Description    :                   
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static u8 max31865_setup(void) 
+{    
+    u8 result = 0u;
+    
+    SPI_MAX31865_Write(Configuration, 0xd1u);            
+    result = SPI_MAX31865_Read(Read_Configuration);            
+    if (result == 0xd1u) 
+    {
+        /* Communication successful with max31865 */
+        SPI_MAX31865_Write(Write_High_Fault_Threshold_MSB, 0xffu);    
+        SPI_MAX31865_Write(Write_High_Fault_Threshold_LSB, 0xffu);    
+        SPI_MAX31865_Write(Write_Low_Fault_Threshold_MSB, 0x00u);        
+        SPI_MAX31865_Write(Write_Low_Fault_Threshold_LSB, 0x00u);          
+        
+        result = 0u;
+    } 
+    else 
+    {
+        /* Unable to communicate with the device. Please check your connections and try again */
+        result = 1u;
+    }
+    
+    return result;
+}
+
+/*******************************************************************************
+* Function Name  : get_Temperature
+* Description    :                   
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static u8 get_Temperature(void) 
+{
+    u8 lsb_rtd,msb_rtd,fault_test;
+    u16 RTD = 0u;
+    u8 temperature = 0u;
+    
+    lsb_rtd = SPI_MAX31865_Read(Read_RTD_LSB);
+    fault_test = lsb_rtd & 0x01u; 
+    if( fault_test == 0u ) 								
+    {
+        msb_rtd = SPI_MAX31865_Read(Read_RTD_MSB);					
+        RTD = ((msb_rtd << 7u) + ((lsb_rtd & 0xFEu) >> 1u)); 
+        
+        temperature = ( RTD / 32u );
+    }
+    
+    return temperature;
+}
+
+/*******************************************************************************
+* Function Name  : Get_RTD_Value
+* Description    :                   
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+u8 Get_RTD_Value(void) 
+{ 
+    u8 value = 0u;
+    u8 Fault_Error = 0u;
+    
+    /* for test */
+    u8 temp[8] = { 0u };
+    temp[0] = SPI_MAX31865_Read(Read_Configuration);
+    temp[1] = SPI_MAX31865_Read(Read_RTD_MSB);
+    temp[2] = SPI_MAX31865_Read(Read_RTD_LSB);
+    temp[3] = SPI_MAX31865_Read(Read_High_Fault_Threshold_MSB);
+    temp[4] = SPI_MAX31865_Read(Read_High_Fault_Threshold_LSB);
+    temp[5] = SPI_MAX31865_Read(Read_Low_Fault_Threshold_MSB);
+    temp[6] = SPI_MAX31865_Read(Read_Low_Fault_Threshold_LSB);
+    temp[7] = SPI_MAX31865_Read(Fault_Status);
+    
+    Fault_Error = SPI_MAX31865_Read(Fault_Status);       
+    if( Fault_Error == 0u ) 
+    {     
+        value = get_Temperature();
+    } 
+    else 
+    {
+        /* clear fault */
+        SPI_MAX31865_Write(Configuration, 0x82u);
+        delay_us(700u); 
+        SPI_MAX31865_Write(Configuration, 0xd1u);
+    }  
+    
+    return value;
+}
 
 /******************************  END OF FILE  *********************************/

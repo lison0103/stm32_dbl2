@@ -22,7 +22,7 @@
 void Communication_CPU(void);
 void Receive_IO_status_from_CPU(void);
 void CPU_Exchange_Data( u8 *buffer, u8 len );
-void CPU_Data_Check( u8 *buffer, u8 *len );
+void CPU_Data_Check( u8 buffer[], u8 *len, u32 times );
 
 #endif  /* __ESC_COMM_DUALCPU_H */
 

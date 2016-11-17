@@ -3,6 +3,7 @@
 * Author             : lison
 * Version            : V1.0
 * Date               : 08/07/2016
+* Last modify date   : 10/27/2016
 * Description        : Contains the prototype of driver of max31865.
 *			          
 *******************************************************************************/
@@ -19,8 +20,7 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 u8 SPI_MAX31865_Init(void);
-void SPI_MAX31865_Write(u8 address, u8 value);
-uint8_t SPI_MAX31865_Read(u8 address);
+u8 Get_RTD_Value(void) ;
 
 #endif /* __MAX31865_H */
 

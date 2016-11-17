@@ -2306,6 +2306,9 @@
         <name>$PROJ_DIR$\..\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_wwdg.c</name>
       </file>
     </group>
+    <configuration>
+      <name>GEC-DBL2-S</name>
+    </configuration>
   </group>
   <group>
     <name>HARDWARE</name>

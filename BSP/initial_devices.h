@@ -31,7 +31,7 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 #define SELF_TEST       ( 0 )
-#define SYSTEMTICK      ( 5 )
+#define SYSTEMTICK      ( 2u )
 
 /* Exported functions ------------------------------------------------------- */
 void Initial_Device(void);

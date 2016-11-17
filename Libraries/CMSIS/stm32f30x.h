@@ -148,11 +148,13 @@
    */
 #define __STM32F30X_STDPERIPH_VERSION_MAIN   (0x01) /*!< [31:24] main version */                                  
 #define __STM32F30X_STDPERIPH_VERSION_SUB1   (0x02) /*!< [23:16] sub1 version */
-#define __STM32F30X_STDPERIPH_VERSION_SUB2   (0x02) /*!< [15:8]  sub2 version */
+/* #define __STM32F30X_STDPERIPH_VERSION_SUB2   (0x02) */ /*!< [15:8]  sub2 version */
+/* MISRA C 2004 rule 5.1 can not compile */
+#define __STM32F30X_VERSION_SUB2   (0x02) /*!< [15:8]  sub2 version */     
 #define __STM32F30X_STDPERIPH_VERSION_RC     (0x00) /*!< [7:0]  release candidate */ 
 #define __STM32F30X_STDPERIPH_VERSION       ( (__STM32F30X_STDPERIPH_VERSION_MAIN << 24)\
                                              |(__STM32F30X_STDPERIPH_VERSION_SUB1 << 16)\
-                                             |(__STM32F30X_STDPERIPH_VERSION_SUB2 << 8)\
+                                             |(__STM32F30X_VERSION_SUB2 << 8)\
                                              |(__STM32F30X_STDPERIPH_VERSION_RC))
                                              
 /**
@@ -209,8 +211,8 @@ typedef enum IRQn
   DMA1_Channel6_IRQn          = 16,     /*!< DMA1 Channel 6 Interrupt                                          */
   DMA1_Channel7_IRQn          = 17,     /*!< DMA1 Channel 7 Interrupt                                          */
   ADC1_2_IRQn                 = 18,     /*!< ADC1 & ADC2 Interrupts                                            */
-  USB_HP_CAN1_TX_IRQn         = 19,     /*!< USB Device High Priority or CAN1 TX Interrupts                    */
-  USB_LP_CAN1_RX0_IRQn        = 20,     /*!< USB Device Low Priority or CAN1 RX0 Interrupts                    */  
+  USB_HP_CAN1_TX_IRQn         = 19u,     /*!< USB Device High Priority or CAN1 TX Interrupts                    */
+  USB_LP_CAN1_RX0_IRQn        = 20u,     /*!< USB Device Low Priority or CAN1 RX0 Interrupts                    */  
   CAN1_RX1_IRQn               = 21,     /*!< CAN1 RX1 Interrupt                                                */
   CAN1_SCE_IRQn               = 22,     /*!< CAN1 SCE Interrupt                                                */
   EXTI9_5_IRQn                = 23,     /*!< External Line[9:5] Interrupts                                     */
@@ -1205,32 +1207,32 @@ typedef struct
 
 /*!< Peripheral memory map */
 #define APB1PERIPH_BASE       PERIPH_BASE
-#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000)
-#define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000)
-#define AHB2PERIPH_BASE       (PERIPH_BASE + 0x08000000)
-#define AHB3PERIPH_BASE       (PERIPH_BASE + 0x10000000)
+#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000u)
+#define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000u)
+#define AHB2PERIPH_BASE       (PERIPH_BASE + 0x08000000u)
+#define AHB3PERIPH_BASE       (PERIPH_BASE + 0x10000000u)
 
 /*!< APB1 peripherals */
-#define TIM2_BASE             (APB1PERIPH_BASE + 0x00000000)
-#define TIM3_BASE             (APB1PERIPH_BASE + 0x00000400)
-#define TIM4_BASE             (APB1PERIPH_BASE + 0x00000800)
-#define TIM6_BASE             (APB1PERIPH_BASE + 0x00001000)
-#define TIM7_BASE             (APB1PERIPH_BASE + 0x00001400)
-#define RTC_BASE              (APB1PERIPH_BASE + 0x00002800)
-#define WWDG_BASE             (APB1PERIPH_BASE + 0x00002C00)
-#define IWDG_BASE             (APB1PERIPH_BASE + 0x00003000)
+#define TIM2_BASE             (APB1PERIPH_BASE + 0x00000000u)
+#define TIM3_BASE             (APB1PERIPH_BASE + 0x00000400u)
+#define TIM4_BASE             (APB1PERIPH_BASE + 0x00000800u)
+#define TIM6_BASE             (APB1PERIPH_BASE + 0x00001000u)
+#define TIM7_BASE             (APB1PERIPH_BASE + 0x00001400u)
+#define RTC_BASE              (APB1PERIPH_BASE + 0x00002800u)
+#define WWDG_BASE             (APB1PERIPH_BASE + 0x00002C00u)
+#define IWDG_BASE             (APB1PERIPH_BASE + 0x00003000u)
 #define I2S2ext_BASE          (APB1PERIPH_BASE + 0x00003400)
 #define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800)
 #define SPI3_BASE             (APB1PERIPH_BASE + 0x00003C00)
 #define I2S3ext_BASE          (APB1PERIPH_BASE + 0x00004000)
 #define USART2_BASE           (APB1PERIPH_BASE + 0x00004400)
-#define USART3_BASE           (APB1PERIPH_BASE + 0x00004800)
+#define USART3_BASE           (APB1PERIPH_BASE + 0x00004800u)
 #define UART4_BASE            (APB1PERIPH_BASE + 0x00004C00)
 #define UART5_BASE            (APB1PERIPH_BASE + 0x00005000)
 #define I2C1_BASE             (APB1PERIPH_BASE + 0x00005400)
 #define I2C2_BASE             (APB1PERIPH_BASE + 0x00005800)
-#define CAN1_BASE             (APB1PERIPH_BASE + 0x00006400)
-#define PWR_BASE              (APB1PERIPH_BASE + 0x00007000)
+#define CAN1_BASE             (APB1PERIPH_BASE + 0x00006400u)
+#define PWR_BASE              (APB1PERIPH_BASE + 0x00007000u)
 #define DAC1_BASE             (APB1PERIPH_BASE + 0x00007400)
 #define I2C3_BASE             (APB1PERIPH_BASE + 0x00007800)
 #define DAC2_BASE             (APB1PERIPH_BASE + 0x00009800)
@@ -1251,13 +1253,13 @@ typedef struct
 #define OPAMP2_BASE           (APB2PERIPH_BASE + 0x0000003C)
 #define OPAMP3_BASE           (APB2PERIPH_BASE + 0x00000040)
 #define OPAMP4_BASE           (APB2PERIPH_BASE + 0x00000044)
-#define EXTI_BASE             (APB2PERIPH_BASE + 0x00000400)
-#define TIM1_BASE             (APB2PERIPH_BASE + 0x00002C00)
-#define SPI1_BASE             (APB2PERIPH_BASE + 0x00003000)
+#define EXTI_BASE             (APB2PERIPH_BASE + 0x00000400u)
+#define TIM1_BASE             (APB2PERIPH_BASE + 0x00002C00u)
+#define SPI1_BASE             (APB2PERIPH_BASE + 0x00003000u)
 #define TIM8_BASE             (APB2PERIPH_BASE + 0x00003400)
 #define USART1_BASE           (APB2PERIPH_BASE + 0x00003800)
 #define SPI4_BASE             (APB2PERIPH_BASE + 0x00003C00)
-#define TIM15_BASE            (APB2PERIPH_BASE + 0x00004000)
+#define TIM15_BASE            (APB2PERIPH_BASE + 0x00004000u)
 #define TIM16_BASE            (APB2PERIPH_BASE + 0x00004400)
 #define TIM17_BASE            (APB2PERIPH_BASE + 0x00004800)
 #define TIM20_BASE            (APB2PERIPH_BASE + 0x00005000)
@@ -1272,8 +1274,8 @@ typedef struct
 /*!< AHB1 peripherals */
 #define DMA1_BASE             (AHB1PERIPH_BASE + 0x00000000)
 #define DMA1_Channel1_BASE    (AHB1PERIPH_BASE + 0x00000008)
-#define DMA1_Channel2_BASE    (AHB1PERIPH_BASE + 0x0000001C)
-#define DMA1_Channel3_BASE    (AHB1PERIPH_BASE + 0x00000030)
+#define DMA1_Channel2_BASE    (AHB1PERIPH_BASE + 0x0000001Cu)
+#define DMA1_Channel3_BASE    (AHB1PERIPH_BASE + 0x00000030u)
 #define DMA1_Channel4_BASE    (AHB1PERIPH_BASE + 0x00000044)
 #define DMA1_Channel5_BASE    (AHB1PERIPH_BASE + 0x00000058)
 #define DMA1_Channel6_BASE    (AHB1PERIPH_BASE + 0x0000006C)
@@ -1284,18 +1286,18 @@ typedef struct
 #define DMA2_Channel3_BASE    (AHB1PERIPH_BASE + 0x00000430)
 #define DMA2_Channel4_BASE    (AHB1PERIPH_BASE + 0x00000444)
 #define DMA2_Channel5_BASE    (AHB1PERIPH_BASE + 0x00000458)
-#define RCC_BASE              (AHB1PERIPH_BASE + 0x00001000)
+#define RCC_BASE              (AHB1PERIPH_BASE + 0x00001000u)
 #define FLASH_R_BASE          (AHB1PERIPH_BASE + 0x00002000) /*!< Flash registers base address */
 #define OB_BASE               ((uint32_t)0x1FFFF800)     /*!< Flash Option Bytes base address */
-#define CRC_BASE              (AHB1PERIPH_BASE + 0x00003000)
+#define CRC_BASE              (AHB1PERIPH_BASE + 0x00003000u)
 #define TSC_BASE              (AHB1PERIPH_BASE + 0x00004000)
 
 /*!< AHB2 peripherals */
-#define GPIOA_BASE            (AHB2PERIPH_BASE + 0x0000)
-#define GPIOB_BASE            (AHB2PERIPH_BASE + 0x0400)
-#define GPIOC_BASE            (AHB2PERIPH_BASE + 0x0800)
-#define GPIOD_BASE            (AHB2PERIPH_BASE + 0x0C00)
-#define GPIOE_BASE            (AHB2PERIPH_BASE + 0x1000)
+#define GPIOA_BASE            (AHB2PERIPH_BASE + 0x0000u)
+#define GPIOB_BASE            (AHB2PERIPH_BASE + 0x0400u)
+#define GPIOC_BASE            (AHB2PERIPH_BASE + 0x0800u)
+#define GPIOD_BASE            (AHB2PERIPH_BASE + 0x0C00u)
+#define GPIOE_BASE            (AHB2PERIPH_BASE + 0x1000u)
 #define GPIOF_BASE            (AHB2PERIPH_BASE + 0x1400)
 #define GPIOG_BASE            (AHB2PERIPH_BASE + 0x00001800)
 #define GPIOH_BASE            (AHB2PERIPH_BASE + 0x00001C00)

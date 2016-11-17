@@ -30,12 +30,13 @@ u32 SysRunTime = 0;
 u8 testmode = 0;
 
 /* ESC */
-u8 Modbuff[3000];
-u8 EscRTBuff[200];
-u8 McRxBuff[1000];
-u8 *const pcOMC_EscRTBuff = &McRxBuff[0]; 
-u8 *const pcOmcErrorBuff = &McRxBuff[70];
-u8 *const pcErrorBuff = &EscRTBuff[70];
+DBL2EscData EscData;
+DBL2EscData OmcEscData;
+
+/* safety board data */
+u8 EscDataToSafety[4][8];
+u8 EscDataFromSafety[2][8];
+
 
 /*******************************************************************************
 * Function Name  : LED_indicator
@@ -81,44 +82,48 @@ void Task_Loop(void)
       Safety_RunCheck2();
 #endif  
       
+      Safety_Receive_Data_Process();
+      
 #ifdef GEC_DBL2_MASTER  
       if( testmode == 1 )
       {
-          EscRTBuff[0] = ReadSwDp();
+          EscData.SwdpAdr = ReadSwDp();
       }
 #endif
       
-      Get_GpioInput(&EscRTBuff[4]);
+      Get_GpioInput(&EscData.DBL2InputData[0]);
 #ifdef GEC_DBL2_SLAVE      
-      output_driver(&EscRTBuff[30]);
+      output_driver(&EscData.DBL2OutputData);
+      Communication_To_Safety();
+      Communication_CPU();
 #endif
 
       
       /*  ESC  */
       if( testmode == 0 )
       {
-
+          DBL2GetAdr();
       }
 
       
 #ifdef GEC_DBL2_MASTER 
       if( Tms10Counter == 0 )
       {
-
+          Communication_CPU();
+          Safety_Send_Data_Process(0u); 
       }      
       if( Tms20Counter == 0 )
       {                
-          Communication_CPU();
-           
+
       }  
 #else
       if( Tms10Counter == 0 )
       {
-          Communication_CPU();         
+                   
       }
       if( Tms20Counter == 0 )
       {
-          Communication_To_Safety(); 
+           
       }       
 #endif     
       
@@ -131,22 +136,22 @@ void Task_Loop(void)
       
       if( Tms100Counter == 0 )
       {   
-#ifdef GEC_DBL2_SLAVE
-          CAN1_TX_Data[2] = Get_Adc_Average(1);
-          CAN1_TX_Data[3] = Get_Adc_Average(2);
-//          CAN1_TX_Data[3] = SPI_MAX31865_Send(0xaa);
+#ifdef GEC_DBL2_SLAVE         
+          EscData.DBL2AnalogData[0] = Get_Adc_Average(1);
+          EscData.DBL2AnalogData[1] = Get_Adc_Average(2);
+          EscData.DBL2AnalogData[2] = Get_RTD_Value();
 #endif
       }
            
       if( Tms500Counter == 0 )
       {    
 #ifdef GEC_DBL2_SLAVE
-          Input_Check();
+          Input_Check();         
 #endif
       }
       
       if( Tms1000Counter == 0 )
-      {  
+      { 
 
       }
      

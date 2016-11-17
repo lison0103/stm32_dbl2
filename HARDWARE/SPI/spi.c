@@ -29,7 +29,7 @@ u8 SPIx_RX_Buff[buffersize] = { 0 };
 u8 SPIx_TX_Data[buffersize] = { 0 };
 u8 SPIx_RX_Data[buffersize] = { 0 };
 DMA_InitTypeDef     DMA_InitStructure;
-static u16 waitus = 0;
+static u16 waitus = 0u;
 
 
 
@@ -66,26 +66,26 @@ void SPIx_Configuration(SPI_TypeDef* SPIx)
         /* NSS signal by hardware (NSS pin) or software (using SSI bit) management: internal NSS-bit control signal has SSI */
 	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;		                
         /* Defines the baud rate prescaler values: Baud Rate Prescaler is 32, speed is about 72M / 32 = 2.25M / s */
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;	
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;	
         /* Specifies the data transmission from the MSB or LSB bit first: data transmission start from the MSB */
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
         /* CRC polynomial value calculation */
-	SPI_InitStructure.SPI_CRCPolynomial = 7;	                        
+	SPI_InitStructure.SPI_CRCPolynomial = 7u;	                        
 	SPI_Init(SPIx, &SPI_InitStructure);   
         
 #ifdef GEC_DBL2_SLAVE 
         SPI_RxFIFOThresholdConfig(SPIx, SPI_RxFIFOThreshold_QF);
 #endif
         
-        //DMA 
+
         SPIx_DMA_Configuration();       
         SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Tx, ENABLE);
         SPI_I2S_DMACmd(SPIx, SPI_I2S_DMAReq_Rx, ENABLE);
            
-        //CRC
-        SPI_CalculateCRC(SPIx, ENABLE);
+
+/*        SPI_CalculateCRC(SPIx, ENABLE);*/
         
-        //SPI enable
+
 	SPI_Cmd(SPIx, ENABLE); 
         
 } 
@@ -234,9 +234,10 @@ void SPIx_DMA_Configuration( void )
 *******************************************************************************/
 void SPIx_DMA_ReceiveSendByte( u16 num )
 {
+      u16 i;
       
     /* copy data to buff */
-    for(u16 i = 0; i < num; i++)
+    for(i = 0u; i < num; i++)
     {
         SPIx_TX_Buff[i] = SPIx_TX_Data[i];
     }    
@@ -288,25 +289,25 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
 
 #else
     
-    waitus = 0;
-    while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    waitus = 0u;
+    while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000u ) )
     {
         waitus++;
-        delay_us(1);
+        delay_us(1u);
     }
     
-    if( waitus >= 2000 )
+    if( waitus >= 2000u )
     {
-        printf("1 TXE timeout! \r\n");
+        /* TXE timeout!  */
     }
       
     DMA_Cmd(DMA1_Channel2, DISABLE);
     DMA_Cmd(DMA1_Channel3, DISABLE);      
     
-    DMA1_Channel2->CNDTR = 0x0000;	
+    DMA1_Channel2->CNDTR = 0x0000u;	
     DMA1_Channel2->CNDTR = num;
-    DMA1_Channel3->CNDTR = 0x0000;	
-    DMA1_Channel3->CNDTR = num;      
+    DMA1_Channel3->CNDTR = 0x0000u;	
+    DMA1_Channel3->CNDTR = num;    
     
     
     DMA_ClearFlag(DMA1_FLAG_GL3|DMA1_FLAG_TC3|DMA1_FLAG_HT3|DMA1_FLAG_TE3);
@@ -316,16 +317,16 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
     SPI1->DR ;						
       
 
-    waitus = 0;
-    while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    waitus = 0u;
+    while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000u ) )
     {
         waitus++;
-        delay_us(1);
+        delay_us(1u);
     }
     
-    if( waitus >= 2000 )
+    if( waitus >= 2000u )
     {
-        printf("2 TXE timeout! \r\n");
+        /* TXE timeout! */
     }
     
     DMA_Cmd(DMA1_Channel2, ENABLE);    
@@ -347,55 +348,57 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
 void DMA_Check_Flag(u32 times)
 {         
 
+    u16 i;
+    
 #ifdef GEC_DBL2_MASTER
     
-          waitus = 0;
+          waitus = 0u;
           /* 10us */
           while( ( !DMA_GetFlagStatus(DMA1_IT_TC4) ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
+              delay_us(1u);
               EWDT_TOOGLE();
               IWDG_ReloadCounter();  
           }
           
           if( waitus >= times )
           {
-              printf("DMA1_IT_TC2 wait timeout!!! \r\n");
+              /* DMA1_IT_TC2 wait timeout!!! */
           }
-          waitus = 0;
+          waitus = 0u;
           while( ( !DMA_GetFlagStatus(DMA1_IT_TC5) ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
+              delay_us(1u);
           }
           
           if( waitus >= times )
           {
-              printf("DMA1_IT_TC3 wait timeout!!! \r\n");
+              /* DMA1_IT_TC3 wait timeout!!! */
           }
-          waitus = 0;
+          waitus = 0u;
           while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
-          }
-          
-          if( waitus >= times )
-          {             
-              printf("SPI_I2S_FLAG_TXE wait timeout!!! \r\n");
-          }
-          waitus = 0;
-          while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < times ) )
-          {
-              waitus++;
-              delay_us(1);
+              delay_us(1u);
           }
           
           if( waitus >= times )
           {              
-              printf("SPI_I2S_FLAG_BSY wait timeout!!! \r\n");
-          } 
+              /* SPI_I2S_FLAG_TXE wait timeout!!! */
+          }
+          waitus = 0u;
+          while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1u);
+          }
+          
+          if( waitus >= times )
+          {             
+              /* SPI_I2S_FLAG_BSY wait timeout!!! */
+          }
  
         DMA_ClearFlag(DMA1_FLAG_GL5|DMA1_FLAG_TC5|DMA1_FLAG_HT5|DMA1_FLAG_TE5);
         DMA_Cmd(DMA1_Channel5, DISABLE); 
@@ -422,52 +425,52 @@ void DMA_Check_Flag(u32 times)
           
 #else
           
-          waitus = 0;
+          waitus = 0u;
           /* 10us */
           while( ( !DMA_GetFlagStatus(DMA1_IT_TC2) ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
+              delay_us(1u);
               EWDT_TOOGLE();
               IWDG_ReloadCounter();  
           }
           
           if( waitus >= times )
           {
-              printf("DMA1_IT_TC2 wait timeout!!! \r\n");
+              /* DMA1_IT_TC2 wait timeout!!! */
           }
-          waitus = 0;
+          waitus = 0u;
           while( ( !DMA_GetFlagStatus(DMA1_IT_TC3) ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
+              delay_us(1u);
           }
           
           if( waitus >= times )
           {
-              printf("DMA1_IT_TC3 wait timeout!!! \r\n");
+              /* DMA1_IT_TC3 wait timeout!!! */
           }
-          waitus = 0;
+          waitus = 0u;
           while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < times ) )
           {
               waitus++;
-              delay_us(1);
-          }
-          
-          if( waitus >= times )
-          {             
-              printf("SPI_I2S_FLAG_TXE wait timeout!!! \r\n");
-          }
-          waitus = 0;
-          while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < times ) )
-          {
-              waitus++;
-              delay_us(1);
+              delay_us(1u);
           }
           
           if( waitus >= times )
           {              
-              printf("SPI_I2S_FLAG_BSY wait timeout!!! \r\n");
+              /* SPI_I2S_FLAG_TXE wait timeout!!! */
+          }
+          waitus = 0u;
+          while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < times ) )
+          {
+              waitus++;
+              delay_us(1u);
+          }
+          
+          if( waitus >= times )
+          {             
+              /* SPI_I2S_FLAG_BSY wait timeout!!! */
           } 
  
         DMA_ClearFlag(DMA1_FLAG_GL3|DMA1_FLAG_TC3|DMA1_FLAG_HT3|DMA1_FLAG_TE3);
@@ -498,71 +501,13 @@ void DMA_Check_Flag(u32 times)
 #endif
         
         /* copy buff to data */
-        for(u16 i = 0; i < buffersize; i++)
+        for( i = 0u; i < buffersize; i++)
         {
             SPIx_RX_Data[i] = SPIx_RX_Buff[i];
         }         
 }
 
-/*******************************************************************************
-* Function Name  : DMA1_Channel2_IRQHandler
-* Description    : This function handles DMA1 Stream 2 interrupt request.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void DMA1_Channel2_IRQHandler(void)
-{
 
-      if ( ( DMA_GetITStatus( DMA1_IT_TC2 ) ) != RESET )
-      {
-          DMA_ClearFlag(DMA1_FLAG_GL2|DMA1_FLAG_TC2|DMA1_FLAG_HT2|DMA1_FLAG_TE2);         
-          DMA_Cmd(DMA1_Channel2, DISABLE);
- 
-      }
-
-}
-/*******************************************************************************
-* Function Name  : DMA1_Channel3_IRQHandler
-* Description    : This function handles DMA1 Stream 3 interrupt request.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void DMA1_Channel3_IRQHandler(void)
-{
-      if ( ( DMA_GetITStatus( DMA1_IT_TC3 ) ) != RESET )
-      {
-          
-          waitus = 0;
-          while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
-          {
-              waitus++;
-              delay_us(1);
-          }
-          
-          if( waitus >= 2000 )
-          {
-              printf("Channel3 TXE timeout! \r\n");
-          }
-          waitus = 0;
-          while( ( SPI_I2S_GetFlagStatus(SPI1, SPI_I2S_FLAG_BSY) != RESET ) && ( waitus < 2000 ) )
-          {
-              waitus++;
-              delay_us(1);
-          }
-          
-          if( waitus >= 2000 )
-          {
-              printf("Channel3 BSY timeout! \r\n");
-          }          
-          
-          DMA_ClearFlag(DMA1_FLAG_GL3|DMA1_FLAG_TC3|DMA1_FLAG_HT3|DMA1_FLAG_TE3);
-          
-          DMA_Cmd(DMA1_Channel3, DISABLE);                               
-      }
-
-}
 
 
 

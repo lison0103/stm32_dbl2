@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_input.h"
 #include "bsp_iocfg.h"
+#include "esc.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -37,7 +38,7 @@ void Get_GpioInput(u8 inBuff[])
     u16 i; 
     
     /* first, clear the data */
-    for(i =0; i < 8; i++)
+    for(i = 0u; i < 4u; i++)
     {
         inBuff[i] = 0;
     }
@@ -204,6 +205,51 @@ u8 ReadSwDp(void)
     value = ( ((~swdp[3])&0x01) << 3 ) | ( ((~swdp[2])&0x01) << 2 ) | ( ((~swdp[1])&0x01) << 1 ) | ( ((~swdp[0])&0x01) << 0 );
     
     return   value;
+}
+
+/*******************************************************************************
+* Function Name  : DBL2GetAdr
+* Description    : Get the DBL2 up or down configuration.
+*                  
+* Input          : None
+*                  None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void DBL2GetAdr(void)
+{
+
+  u8 adr_temp=0;
+  static u8 adr_pre=0;
+  static u16 adr_cnt=0;
+  
+  adr_temp = ReadSwDp();
+  
+  if(adr_temp == adr_pre)
+  {
+      if(adr_cnt>100)
+      {  
+          switch(adr_temp)
+          {
+             case 0x00u: EscData.SwdpAdr = DBL2_TEST_MODE;break;  
+             case 0x01u: EscData.SwdpAdr = DBL2_UPPER_ADDR;break; 
+             case 0x02u: EscData.SwdpAdr = DBL2_LOWER_ADDR;break; 
+             case 0x04u: EscData.SwdpAdr = DBL2_INTERM1_ADDR;break; 
+             case 0x08u: EscData.SwdpAdr = DBL2_INTERM2_ADDR;break;              
+             default:EscData.SwdpAdr = 0; 
+          }
+      }
+      else
+      {
+          adr_cnt++;
+      }  
+  }  
+  else
+  {
+      adr_cnt = 0;
+  }  
+  
+  adr_pre = adr_temp;
 }
 
 /******************************  END OF FILE  *********************************/

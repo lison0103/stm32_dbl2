@@ -20,7 +20,7 @@
 #ifdef GEC_DBL2_MASTER
 #define EWDT_TOOGLE() 	GPIOA->ODR ^= 0X0001
 #else
-#define EWDT_TOOGLE() 	GPIOC->ODR ^= 0X0004
+#define EWDT_TOOGLE() 	GPIOC->ODR ^= 0X0004u
 #endif
 
 /* Exported functions ------------------------------------------------------- */

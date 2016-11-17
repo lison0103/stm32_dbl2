@@ -3,6 +3,7 @@
 * Author             : lison
 * Version            : V1.0
 * Date               : 06/20/2016
+* Last modify date   : 10/28/2016
 * Description        : This file contains esc communication between dual cpu.
 *                      
 *******************************************************************************/
@@ -31,9 +32,9 @@ u8 onetime = 0;
 static u16 comm_timeout = 100;
 #endif
 
-u8 cpu_senddata_buffer[250];
-u8 cpu_recvdata_buffer[250];
-u8 recvlen = 0;
+static u8 *cpu_senddata_buffer;
+static u8 *cpu_recvdata_buffer;
+static u8 recvlen = 0u;
 
 /*******************************************************************************
 * Function Name  : Communication_CPU
@@ -74,12 +75,7 @@ void Communication_CPU(void)
 *******************************************************************************/
 void Send_state_to_CPU(void)
 {
-    /* 1. esc Rtdata --------------------------*/
-    for( u8 i = 0; i < 100; i++)
-    {
-        cpu_senddata_buffer[i] = EscRTBuff[i];
-    }    
-    
+    cpu_senddata_buffer = (u8*)&EscData;        
 }
 
 /*******************************************************************************
@@ -91,15 +87,7 @@ void Send_state_to_CPU(void)
 *******************************************************************************/
 void Receive_state_from_CPU(void)
 {
-    if( recvlen == 100 )
-    {
-        /* 1. esc Rtdata receive--------------------------*/
-        for( u8 i = 0; i < 100; i++)
-        {
-            McRxBuff[i] = cpu_recvdata_buffer[i];
-        }
-           
-    }
+    cpu_recvdata_buffer = (u8*)&OmcEscData;
 }
 
 /*******************************************************************************
@@ -113,9 +101,9 @@ void Receive_IO_status_from_CPU(void)
 {
       static u8 receive_io_error = 0;
     
-      for( u8 i = 4; i < 8; i++ )
+      for( u8 i = 0; i < 4; i++ )
       {
-          if( pcOMC_EscRTBuff[i] != EscRTBuff[i] )
+          if( OmcEscData.DBL2InputData[i] != EscData.DBL2InputData[i] )
           {
               receive_io_error++;
               break;
@@ -124,7 +112,7 @@ void Receive_IO_status_from_CPU(void)
       
       if( receive_io_error > 5 )
       {
-          NVIC_SystemReset();
+          
       }
       else
       {
@@ -143,23 +131,15 @@ void Receive_IO_status_from_CPU(void)
 *******************************************************************************/
 void CPU_Comm(void)
 {
-
+    u8 i;
 #ifdef GEC_DBL2_MASTER
-    if( onetime == 0 )
-    {
-        onetime++;
 
-        Send_state_to_CPU();
-        CPU_Exchange_Data(cpu_senddata_buffer, 100);
-    }
-    else
-    {
-        CPU_Data_Check(cpu_recvdata_buffer, &recvlen);
-        Receive_state_from_CPU();
-               
-        Send_state_to_CPU();        
-        CPU_Exchange_Data(cpu_senddata_buffer, 100);
-    }
+    Send_state_to_CPU();        
+    CPU_Exchange_Data(cpu_senddata_buffer, ESC_RT_DATA_LEN);
+    
+    Receive_state_from_CPU();
+    CPU_Data_Check(cpu_recvdata_buffer, &recvlen, 1000u );              
+
 #else  
     comm_timeout--;
 
@@ -170,18 +150,33 @@ void CPU_Comm(void)
         ESC_SPI_Error_Process();
         comm_timeout = CPU_COMM_TIMEOUT;
     }
+    
+    if( onetime == 0u )
+    {
+        onetime++;
+        
+        Send_state_to_CPU();
+        CPU_Exchange_Data(cpu_senddata_buffer, ESC_RT_DATA_LEN);
+    }
+    
     if ( ( DMA_GetFlagStatus(DMA1_IT_TC2) ) != RESET )
     {
         
         comm_timeout = CPU_COMM_TIMEOUT;
 
-        CPU_Data_Check(cpu_recvdata_buffer, &recvlen);
         Receive_state_from_CPU();
+        CPU_Data_Check(cpu_recvdata_buffer, &recvlen, 1000u );        
                 
         Send_state_to_CPU();
-        CPU_Exchange_Data(cpu_senddata_buffer, 100);
+        CPU_Exchange_Data(cpu_senddata_buffer, ESC_RT_DATA_LEN);
         
         EN_ERROR7 &= ~0x01;
+        
+        /* clear receive data */
+        for( i = 0u; i < 8u; i++ )
+        {
+            EscData.SafetyReceiveDataB[i] = 0u;       
+        }        
     }   
 #endif
 }
@@ -195,13 +190,13 @@ void CPU_Comm(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void CPU_Data_Check( u8 *buffer, u8 *len )
+void CPU_Data_Check( u8 buffer[], u8 *len, u32 times )
 { 
        
     /* communication buffer */
     comm_num = buffersize;  
        
-    DMA_Check_Flag(10000000);    
+    DMA_Check_Flag(times);    
         
     if(!MB_CRC16(SPIx_RX_Data, comm_num))
     {
@@ -220,7 +215,9 @@ void CPU_Data_Check( u8 *buffer, u8 *len )
     {
         EN_ERROR_SYS3++;     
         /* MB_CRC16 error */
-                       
+#ifdef GEC_DBL2_SLAVE         
+        SPIx_Configuration(SPI1);               
+#endif                        
     }
     
     if(EN_ERROR_SYS3 > 2)

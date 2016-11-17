@@ -57,9 +57,9 @@ void Input_Check(void)
 
         if( testmode == 1 )        
         {
-            ulPt_Input2 = (u32*)&EscRTBuff[4];
-            ulPt_Input1 = (u32*)&McRxBuff[4];
-            ulPt_Output = &EscRTBuff[30];
+            ulPt_Input2 = (u32*)&EscData.DBL2InputData[0];
+            ulPt_Input1 = (u32*)&OmcEscData.DBL2InputData[0];
+            ulPt_Output = &EscData.DBL2OutputData;
             
             
             sflag1 = 0;
@@ -100,7 +100,7 @@ void Input_Check(void)
                 }
             }  
             
-            Dip_value1 = McRxBuff[0];
+            Dip_value1 = OmcEscData.SwdpAdr;
             for( i = 0; i < 4; i++ )
             {
                 if( Dip_value1 & ((u8)( 1 << i )))
@@ -266,7 +266,7 @@ void CrossCommCPUCheck(void)
 
 #ifdef GEC_DBL2_MASTER 
 #else
-        SPIx_DMA_ReceiveSendByte(comm_num);
+        /* SPIx_DMA_ReceiveSendByte(comm_num);*/
 #endif
     if( data_error > 2 )
     {
@@ -291,6 +291,7 @@ void CrossCommCPUCheck(void)
 *******************************************************************************/
 void HardwareTEST(void)
 {
+#if 0     
     u8 testdata1[10];
     u8 testerror = 0;
     u8 len = 0, len1 = 0;
@@ -407,7 +408,7 @@ void HardwareTEST(void)
     {
         CPU_Exchange_Data(senddata, 2);
     }
-    
+#endif    
 }
 #else
 /*******************************************************************************
@@ -421,7 +422,7 @@ void HardwareTEST(void)
 *******************************************************************************/
 void HardwareTEST(void)
 {
-
+#if 0
     u8 len = 0;
     u8 senddata[10],recvdata[10];
 
@@ -451,7 +452,7 @@ void HardwareTEST(void)
             testmode = 0;
         }
     } 
-    
+#endif    
 }
 
 
