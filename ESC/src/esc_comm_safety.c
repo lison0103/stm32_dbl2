@@ -88,7 +88,8 @@ static void Communication_Can_Filter(void)
 *******************************************************************************/
 void Safety_Send_Data_Process(u8 respone)
 {	
-    u16 crc,len;
+    u32 crc;
+    u16 len;
     u8 i;
 
     
@@ -151,12 +152,12 @@ void Safety_Send_Data_Process(u8 respone)
         EscData.SafetySendData[7] = EscData.SEQN;        
           
         /* CRC_A */
-        len = 10u;
-        crc = MB_CRC16( &EscData.SafetySendData[0], len - 2u );
-        EscData.SafetySendData[8] = (u8)crc;
-        EscData.SafetySendData[9] = (u8)(crc >> 8u);     
-        EscData.SafetySendData[10] = 0x00u;
-        EscData.SafetySendData[11] = 0x00u;
+        len = 12u;
+        crc = MB_CRC32( &EscData.SafetySendData[0], len - 4u, SAFETY_POLYNOMIALS );
+        EscData.SafetySendData[len - 4u] = (u8)(crc >> 24u);
+        EscData.SafetySendData[len - 3u] = (u8)(crc >> 16u);     
+        EscData.SafetySendData[len - 2u] = (u8)(crc >> 8u);
+        EscData.SafetySendData[len - 1u] = (u8)crc;        
 #else
         /* DBL2 UP */
         if( EscData.SwdpAdr == DBL2_UPPER_ADDR )
@@ -215,12 +216,12 @@ void Safety_Send_Data_Process(u8 respone)
         EscData.SafetySendData[7] = EscData.SEQN;        
           
         /* CRC_B */
-        len = 10u;
-        crc = MB_CRC16( &EscData.SafetySendData[0], len - 2u );
-        EscData.SafetySendData[8] = (u8)crc;
-        EscData.SafetySendData[9] = (u8)(crc >> 8u);     
-        EscData.SafetySendData[10] = 0x00u;
-        EscData.SafetySendData[11] = 0x00u;
+        len = 12u;
+        crc = MB_CRC32( &EscData.SafetySendData[0], len - 4u, SAFETY_POLYNOMIALS );
+        EscData.SafetySendData[len - 4u] = (u8)(crc >> 24u);
+        EscData.SafetySendData[len - 3u] = (u8)(crc >> 16u);     
+        EscData.SafetySendData[len - 2u] = (u8)(crc >> 8u);
+        EscData.SafetySendData[len - 1u] = (u8)crc;
 #endif       
     }
     else
@@ -273,7 +274,7 @@ void Safety_Receive_Data_Process(void)
 #else       
         /* Validation Request: Check CONNECTION, CRC and compare _1 and _2 data */       
         /* check CRC */
-        if( !MB_CRC16(&OmcEscData.SafetyReceiveDataB[0], 7u ))
+        if( !MB_CRC32(&OmcEscData.SafetyReceiveDataB[0], 8u, SAFETY_POLYNOMIALS ))
         { 
             /* compare CONNECTION */
             if((OmcEscData.SafetyReceiveDataB[0] & 0x03u) != ((OmcEscData.SafetyReceiveDataB[0] >> 4u) & 0x03u))
@@ -360,6 +361,48 @@ void Safety_Receive_Data_Process(void)
 /*******************************************************************************
 * Function Name  : Can_Send_Data_Process
 * Description    :                  
+*
+    MESSAGE 1
+    Byte	Bits (7 is MSB)	Data
+    0	0-1	CONNECTION_A_1
+    0	2-8	FAULT_STATUS_A_1
+    1	0-7	SAFETY_SENSOR_INPUTS_A_1 (8inputs =8x1 bit )
+    2	0-5	SAFETY_SENSOR_INPUTS_A_1 (6inputs =6x1 bit )
+    2	6-7	SAFETY_SWITCH_INPUTS_A_1 (2inputs =2x1 bit )
+    3	0-7	SEQN_A_1
+    4	0-1	CONNECTION_A_2
+    4	2-8	FAULT_STATUS_A_2
+    5	0-7	SAFETY_SENSOR_INPUTS_A_2 (8inputs =8x1 bit )
+    6	0-5	SAFETY_SENSOR_INPUTS_A_2 (6inputs =6x1 bit )
+    6	6-7	SAFETY_SWITCH_INPUTS_A _2 (2inputs =2x1 bit )
+    7	0-7	SEQN_A_2
+
+    MESSAGE 2
+    Byte	Bits (7 is MSB)	Data
+    0	0-1	CONNECTION_B_1
+    0	2-8	FAULT_STATUS_B_1
+    1	0-7	SAFETY_SENSOR_INPUTS_B_1 (8inputs =8x1 bit )
+    2	0-5	SAFETY_SENSOR_INPUTS_B_1 (6inputs =6x1 bit )
+    2	6-7	SAFETY_SWITCH_INPUTS_B_1 (2inputs =2x1 bit )
+    3	0-7	SEQN_B_1
+    4	0-1	CONNECTION_B_2
+    4	2-8	FAULT_STATUS_B_2
+    5	0-7	SAFETY_SENSOR_INPUTS_B_2 (8inputs =8x1 bit )
+    6	0-5	SAFETY_SENSOR_INPUTS_B_2 (6inputs =6x1 bit )
+    6	6-7	SAFETY_SWITCH_INPUTS_B_2 (2inputs =2x1 bit )
+    7	0-7	SEQN_B_2
+        
+    MESSAGE 3
+    Byte	Bits (7 is MSB)	Data
+    0,1,2,3	0-31	CRC_A
+    4,5,6,7	0-31	CRC_B
+
+    CRC_A: CONNECTION_A , FAULT_STATUS_A, SAFETY_SENSOR_INPUTS_A, 
+    SAFETY_SWITCH_INPUTS_A, SEQN_A
+
+    CRC_B: CONNECTION_B , FAULT_STATUS_B, SAFETY_SENSOR_INPUTS_B, 
+    SAFETY_SWITCH_INPUTS_B, SEQN_B
+*
 * Input          : None
 * Output         : None
 * Return         : None 
@@ -368,53 +411,10 @@ static void Can_Send_Data_Process(void)
 {	
     u8 result,i;
     static u8 stat_u8TimerSendNonSafety = 0u;
-/*
-MESSAGE 1
-Byte	Bits (7 is MSB)	Data
-0	0-1	CONNECTION_A_1
-0	2-8	FAULT_STATUS_A_1
-1	0-7	SAFETY_SENSOR_INPUTS_A_1 (8inputs =8x1 bit )
-2	0-5	SAFETY_SENSOR_INPUTS_A_1 (6inputs =6x1 bit )
-2	6-7	SAFETY_SWITCH_INPUTS_A_1 (2inputs =2x1 bit )
-3	0-7	SEQN_A_1
-4	0-1	CONNECTION_A_2
-4	2-8	FAULT_STATUS_A_2
-5	0-7	SAFETY_SENSOR_INPUTS_A_2 (8inputs =8x1 bit )
-6	0-5	SAFETY_SENSOR_INPUTS_A_2 (6inputs =6x1 bit )
-6	6-7	SAFETY_SWITCH_INPUTS_A _2 (2inputs =2x1 bit )
-7	0-7	SEQN_A_2
-
-MESSAGE 2
-Byte	Bits (7 is MSB)	Data
-0	0-1	CONNECTION_B_1
-0	2-8	FAULT_STATUS_B_1
-1	0-7	SAFETY_SENSOR_INPUTS_B_1 (8inputs =8x1 bit )
-2	0-5	SAFETY_SENSOR_INPUTS_B_1 (6inputs =6x1 bit )
-2	6-7	SAFETY_SWITCH_INPUTS_B_1 (2inputs =2x1 bit )
-3	0-7	SEQN_B_1
-4	0-1	CONNECTION_B_2
-4	2-8	FAULT_STATUS_B_2
-5	0-7	SAFETY_SENSOR_INPUTS_B_2 (8inputs =8x1 bit )
-6	0-5	SAFETY_SENSOR_INPUTS_B_2 (6inputs =6x1 bit )
-6	6-7	SAFETY_SWITCH_INPUTS_B_2 (2inputs =2x1 bit )
-7	0-7	SEQN_B_2
-    
-MESSAGE 3
-Byte	Bits (7 is MSB)	Data
-0,1,2,3	0-31	CRC_A
-4,5,6,7	0-31	CRC_B
-
-CRC_A: CONNECTION_A , FAULT_STATUS_A, SAFETY_SENSOR_INPUTS_A, 
-SAFETY_SWITCH_INPUTS_A, SEQN_A
-
-CRC_B: CONNECTION_B , FAULT_STATUS_B, SAFETY_SENSOR_INPUTS_B, 
-SAFETY_SWITCH_INPUTS_B, SEQN_B
-    
-*/    
+  
 
     /* SF_B SEQN_B_1 and SEQN_B_2 has data, it has respone */
-    /*if( (OmcEscData.SafetySendData[3]) && (OmcEscData.SafetySendData[7]) && g_u8SafetyRequest == 1u )*/
-    if((!MB_CRC16( &OmcEscData.SafetySendData[0], 12u )) && (g_u8SafetyRequest == 1u) )
+    if((!MB_CRC32( &OmcEscData.SafetySendData[0], 12u, SAFETY_POLYNOMIALSB )) && (g_u8SafetyRequest == 1u) )
     {
         g_u8SafetyRequest = 0u;
         
@@ -795,15 +795,16 @@ CRC_B: RESET_B, SEQN_B, CONNECTION_B
         EscData.SafetyReceiveDataB[0] |= (u8)((EscDataFromSafety[0][0] >> 4u) & 0x0fu);
         EscData.SafetyReceiveDataB[0] |= (EscDataFromSafety[0][3] & 0xf0u);     
         EscData.SafetyReceiveDataB[1] = EscDataFromSafety[0][2];     
-        EscData.SafetyReceiveDataB[2] = EscDataFromSafety[0][5];      
-        EscData.SafetyReceiveDataB[3] = EscDataFromSafety[1][4];
-        EscData.SafetyReceiveDataB[4] = EscDataFromSafety[1][5];
-        EscData.SafetyReceiveDataB[5] = EscDataFromSafety[1][6];
-        EscData.SafetyReceiveDataB[6] = EscDataFromSafety[1][7];
+        EscData.SafetyReceiveDataB[2] = EscDataFromSafety[0][5]; 
+        EscData.SafetyReceiveDataB[3] = EscDataFromSafety[0][7];
+        EscData.SafetyReceiveDataB[4] = EscDataFromSafety[1][4];
+        EscData.SafetyReceiveDataB[5] = EscDataFromSafety[1][5];
+        EscData.SafetyReceiveDataB[6] = EscDataFromSafety[1][6];
+        EscData.SafetyReceiveDataB[7] = EscDataFromSafety[1][7];
         
         /* Validation Request: Check CONNECTION, CRC and compare _1 and _2 data */       
         /* check CRC */
-        if( !MB_CRC16( &EscData.SafetyReceiveDataA[0], 8u ))
+        if( !MB_CRC32( &EscData.SafetyReceiveDataA[0], 8u, SAFETY_POLYNOMIALS ))
         {  
             /* compare CONNECTION */
             if((EscData.SafetyReceiveDataA[0] & 0x03u) != ((EscData.SafetyReceiveDataA[0] >> 4u) & 0x03u))
