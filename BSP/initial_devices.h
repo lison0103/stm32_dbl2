@@ -35,8 +35,7 @@
 
 /* Exported functions ------------------------------------------------------- */
 void Initial_Device(void);
-void RCC_Configuration(void);
-void NVIC_Configuration(void);
+
 
 
 

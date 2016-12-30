@@ -33,18 +33,15 @@
 *******************************************************************************/
 void Get_GpioInput(u8 inBuff[])
 {     
-
-    static u16 PinValue[3][5],ByteAnd[5],ByteOr[5],read_pin_cnt = 0;
+    static u16 PinValue[3u][5u],ByteAnd[5u],ByteOr[5u],read_pin_cnt = 0u;
     u16 i; 
     
-    /* first, clear the data */
-    for(i = 0u; i < 4u; i++)
-    {
-        inBuff[i] = 0;
-    }
     
     read_pin_cnt++;  
-    if(read_pin_cnt > 2) read_pin_cnt = 0;  
+    if( read_pin_cnt > 2u ) 
+    {
+        read_pin_cnt = 0u;  
+    } 
     
     /* Read I/O port */                      
     PinValue[read_pin_cnt][0] = GPIO_ReadInputData(GPIOA);
@@ -53,98 +50,101 @@ void Get_GpioInput(u8 inBuff[])
     PinValue[read_pin_cnt][3] = GPIO_ReadInputData(GPIOD);
     PinValue[read_pin_cnt][4] = GPIO_ReadInputData(GPIOE);
     
-    for(i=0;i<5;i++)
+    for(i=0u;i<5u;i++)
     {   
-        ByteAnd[i] = PinValue[0][i] & PinValue[1][i] & PinValue[2][i];
-        ByteOr[i] = PinValue[0][i] | PinValue[1][i] | PinValue[2][i]; 
+         /* For MISRA C 2004 12.7 */
+          ByteAnd[i] = PinValue[0u][i] & PinValue[1u][i];
+          ByteAnd[i] &= PinValue[2u][i];
+          ByteOr[i] = PinValue[0u][i] | PinValue[1u][i];
+          ByteOr[i] |= PinValue[2u][i];
     }
     
 #ifdef GEC_DBL2_MASTER
     
     /* INA1 ~ INA8 */
-    if(ByteAnd[1] & 0x0040) inBuff[0] |= 0x01; else if(!(ByteOr[1] & 0x0040)) inBuff[0] &= ~0x01; 
-    if(ByteAnd[1] & 0x0020) inBuff[0] |= 0x02; else if(!(ByteOr[1] & 0x0020)) inBuff[0] &= ~0x02; 
-    if(ByteAnd[1] & 0x0010) inBuff[0] |= 0x04; else if(!(ByteOr[1] & 0x0010)) inBuff[0] &= ~0x04; 
-    if(ByteAnd[1] & 0x0008) inBuff[0] |= 0x08; else if(!(ByteOr[1] & 0x0008)) inBuff[0] &= ~0x08; 
-    if(ByteAnd[3] & 0x0080) inBuff[0] |= 0x10; else if(!(ByteOr[3] & 0x0080)) inBuff[0] &= ~0x10; 
-    if(ByteAnd[3] & 0x0040) inBuff[0] |= 0x20; else if(!(ByteOr[3] & 0x0040)) inBuff[0] &= ~0x20; 
-    if(ByteAnd[3] & 0x0020) inBuff[0] |= 0x40; else if(!(ByteOr[3] & 0x0020)) inBuff[0] &= ~0x40; 
-    if(ByteAnd[3] & 0x0010) inBuff[0] |= 0x80; else if(!(ByteOr[3] & 0x0010)) inBuff[0] &= ~0x80; 
+    if(ByteAnd[1u] & 0x0040u) { inBuff[0u] |= 0x01u; } else if(!(ByteOr[1u] & 0x0040u)) { inBuff[0u] &= ~0x01u; }else{}
+    if(ByteAnd[1u] & 0x0020u) { inBuff[0u] |= 0x02u; } else if(!(ByteOr[1u] & 0x0020u)) { inBuff[0u] &= ~0x02u; }else{}
+    if(ByteAnd[1u] & 0x0010u) { inBuff[0u] |= 0x04u; } else if(!(ByteOr[1u] & 0x0010u)) { inBuff[0u] &= ~0x04u; }else{}
+    if(ByteAnd[1u] & 0x0008u) { inBuff[0u] |= 0x08u; } else if(!(ByteOr[1u] & 0x0008u)) { inBuff[0u] &= ~0x08u; }else{}
+    if(ByteAnd[3u] & 0x0080u) { inBuff[0u] |= 0x10u; } else if(!(ByteOr[3u] & 0x0080u)) { inBuff[0u] &= ~0x10u; }else{}
+    if(ByteAnd[3u] & 0x0040u) { inBuff[0u] |= 0x20u; } else if(!(ByteOr[3u] & 0x0040u)) { inBuff[0u] &= ~0x20u; }else{}
+    if(ByteAnd[3u] & 0x0020u) { inBuff[0u] |= 0x40u; } else if(!(ByteOr[3u] & 0x0020u)) { inBuff[0u] &= ~0x40u; }else{}
+    if(ByteAnd[3u] & 0x0010u) { inBuff[0u] |= 0x80u; } else if(!(ByteOr[3u] & 0x0010u)) { inBuff[0u] &= ~0x80u; }else{}
     
     /* INA9 ~ INA14 */
-    if(ByteAnd[3] & 0x0008) inBuff[1] |= 0x01; else if(!(ByteOr[3] & 0x0008)) inBuff[1] &= ~0x01; 
-    if(ByteAnd[3] & 0x0004) inBuff[1] |= 0x02; else if(!(ByteOr[3] & 0x0004)) inBuff[1] &= ~0x02; 
-    if(ByteAnd[3] & 0x0002) inBuff[1] |= 0x04; else if(!(ByteOr[3] & 0x0002)) inBuff[1] &= ~0x04; 
-    if(ByteAnd[3] & 0x0001) inBuff[1] |= 0x08; else if(!(ByteOr[3] & 0x0001)) inBuff[1] &= ~0x08; 
-    if(ByteAnd[2] & 0x1000) inBuff[1] |= 0x10; else if(!(ByteOr[2] & 0x1000)) inBuff[1] &= ~0x10; 
-    if(ByteAnd[2] & 0x0800) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x0800)) inBuff[1] &= ~0x20;
+    if(ByteAnd[3u] & 0x0008u) { inBuff[1u] |= 0x01u; } else if(!(ByteOr[3u] & 0x0008u)) { inBuff[1u] &= ~0x01u; }else{}
+    if(ByteAnd[3u] & 0x0004u) { inBuff[1u] |= 0x02u; } else if(!(ByteOr[3u] & 0x0004u)) { inBuff[1u] &= ~0x02u; }else{}
+    if(ByteAnd[3u] & 0x0002u) { inBuff[1u] |= 0x04u; } else if(!(ByteOr[3u] & 0x0002u)) { inBuff[1u] &= ~0x04u; }else{}
+    if(ByteAnd[3u] & 0x0001u) { inBuff[1u] |= 0x08u; } else if(!(ByteOr[3u] & 0x0001u)) { inBuff[1u] &= ~0x08u; }else{}
+    if(ByteAnd[2u] & 0x1000u) { inBuff[1u] |= 0x10u; } else if(!(ByteOr[2u] & 0x1000u)) { inBuff[1u] &= ~0x10u; }else{}
+    if(ByteAnd[2u] & 0x0800u) { inBuff[1u] |= 0x20u; } else if(!(ByteOr[2u] & 0x0800u)) { inBuff[1u] &= ~0x20u;}else{}
     /* SFSW_INA1 ~ SFSW_INA2 */ 
-    if(ByteAnd[0] & 0x0010) inBuff[1] |= 0x40; else if(!(ByteOr[0] & 0x0010)) inBuff[1] &= ~0x40; 
-    if(ByteAnd[0] & 0x0020) inBuff[1] |= 0x80; else if(!(ByteOr[0] & 0x0020)) inBuff[1] &= ~0x80; 
+    if(ByteAnd[0] & 0x0010u) { inBuff[1u] |= 0x40u; } else if(!(ByteOr[0] & 0x0010u)) { inBuff[1u] &= ~0x40u; }else{}
+    if(ByteAnd[0] & 0x0020u) { inBuff[1u] |= 0x80u; } else if(!(ByteOr[0] & 0x0020u)) { inBuff[1u] &= ~0x80u; }else{}
     
     /* SFSW_INA3 ~ SFSW_INA10 */ 
-    if(ByteAnd[0] & 0x0040) inBuff[2] |= 0x01; else if(!(ByteOr[0] & 0x0040)) inBuff[2] &= ~0x01; 
-    if(ByteAnd[0] & 0x0080) inBuff[2] |= 0x02; else if(!(ByteOr[0] & 0x0080)) inBuff[2] &= ~0x02; 
-    if(ByteAnd[2] & 0x0010) inBuff[2] |= 0x04; else if(!(ByteOr[2] & 0x0010)) inBuff[2] &= ~0x04; 
-    if(ByteAnd[2] & 0x0020) inBuff[2] |= 0x08; else if(!(ByteOr[2] & 0x0020)) inBuff[2] &= ~0x08; 
-    if(ByteAnd[1] & 0x0001) inBuff[2] |= 0x10; else if(!(ByteOr[1] & 0x0001)) inBuff[2] &= ~0x10; 
-    if(ByteAnd[1] & 0x0002) inBuff[2] |= 0x20; else if(!(ByteOr[1] & 0x0002)) inBuff[2] &= ~0x20; 
-    if(ByteAnd[1] & 0x0004) inBuff[2] |= 0x40; else if(!(ByteOr[1] & 0x0004)) inBuff[2] &= ~0x40; 
-    if(ByteAnd[4] & 0x0080) inBuff[2] |= 0x80; else if(!(ByteOr[4] & 0x0080)) inBuff[2] &= ~0x80;
+    if(ByteAnd[0] & 0x0040u) { inBuff[2u] |= 0x01u; } else if(!(ByteOr[0] & 0x0040u)) { inBuff[2u] &= ~0x01u; }else{}
+    if(ByteAnd[0] & 0x0080u) { inBuff[2u] |= 0x02u; } else if(!(ByteOr[0] & 0x0080u)) { inBuff[2u] &= ~0x02u; }else{}
+    if(ByteAnd[2u] & 0x0010u) { inBuff[2u] |= 0x04u; } else if(!(ByteOr[2u] & 0x0010u)) { inBuff[2u] &= ~0x04u; }else{}
+    if(ByteAnd[2u] & 0x0020u) { inBuff[2u] |= 0x08u; } else if(!(ByteOr[2u] & 0x0020u)) { inBuff[2u] &= ~0x08u; }else{}
+    if(ByteAnd[1u] & 0x0001u) { inBuff[2u] |= 0x10u; } else if(!(ByteOr[1u] & 0x0001u)) { inBuff[2u] &= ~0x10u; }else{}
+    if(ByteAnd[1u] & 0x0002u) { inBuff[2u] |= 0x20u; } else if(!(ByteOr[1u] & 0x0002u)) { inBuff[2u] &= ~0x20u; }else{}
+    if(ByteAnd[1u] & 0x0004u) { inBuff[2u] |= 0x40u; } else if(!(ByteOr[1u] & 0x0004u)) { inBuff[2u] &= ~0x40u; }else{}
+    if(ByteAnd[4u] & 0x0080u) { inBuff[2u] |= 0x80u; } else if(!(ByteOr[4u] & 0x0080u)) { inBuff[2u] &= ~0x80u;}else{}
     
     /* SFSW_INA11 ~ SFSW_INA18 */ 
-    if(ByteAnd[4] & 0x0100) inBuff[3] |= 0x01; else if(!(ByteOr[4] & 0x0100)) inBuff[3] &= ~0x01; 
-    if(ByteAnd[4] & 0x0200) inBuff[3] |= 0x02; else if(!(ByteOr[4] & 0x0200)) inBuff[3] &= ~0x02;
-    if(ByteAnd[4] & 0x0400) inBuff[3] |= 0x04; else if(!(ByteOr[4] & 0x0400)) inBuff[3] &= ~0x04;
-    if(ByteAnd[4] & 0x0800) inBuff[3] |= 0x08; else if(!(ByteOr[4] & 0x0800)) inBuff[3] &= ~0x08; 
-    if(ByteAnd[4] & 0x1000) inBuff[3] |= 0x10; else if(!(ByteOr[4] & 0x1000)) inBuff[3] &= ~0x10; 
-    if(ByteAnd[4] & 0x2000) inBuff[3] |= 0x20; else if(!(ByteOr[4] & 0x2000)) inBuff[3] &= ~0x20;
-    if(ByteAnd[4] & 0x4000) inBuff[3] |= 0x40; else if(!(ByteOr[4] & 0x4000)) inBuff[3] &= ~0x40; 
-    if(ByteAnd[4] & 0x8000) inBuff[3] |= 0x80; else if(!(ByteOr[4] & 0x8000)) inBuff[3] &= ~0x80; 
+    if(ByteAnd[4u] & 0x0100u) { inBuff[3u] |= 0x01u; } else if(!(ByteOr[4u] & 0x0100u)) { inBuff[3u] &= ~0x01u; }else{}
+    if(ByteAnd[4u] & 0x0200u) { inBuff[3u] |= 0x02u; } else if(!(ByteOr[4u] & 0x0200u)) { inBuff[3u] &= ~0x02u;}else{}
+    if(ByteAnd[4u] & 0x0400u) { inBuff[3u] |= 0x04u; } else if(!(ByteOr[4u] & 0x0400u)) { inBuff[3u] &= ~0x04u;}else{}
+    if(ByteAnd[4u] & 0x0800u) { inBuff[3u] |= 0x08u; } else if(!(ByteOr[4u] & 0x0800u)) { inBuff[3u] &= ~0x08u; }else{}
+    if(ByteAnd[4u] & 0x1000u) { inBuff[3u] |= 0x10u; } else if(!(ByteOr[4u] & 0x1000u)) { inBuff[3u] &= ~0x10u; }else{}
+    if(ByteAnd[4u] & 0x2000u) { inBuff[3u] |= 0x20u; } else if(!(ByteOr[4u] & 0x2000u)) { inBuff[3u] &= ~0x20u;}else{}
+    if(ByteAnd[4u] & 0x4000u) { inBuff[3u] |= 0x40u; } else if(!(ByteOr[4u] & 0x4000u)) { inBuff[3u] &= ~0x40u; }else{}
+    if(ByteAnd[4u] & 0x8000u) { inBuff[3u] |= 0x80u; } else if(!(ByteOr[4u] & 0x8000u)) { inBuff[3u] &= ~0x80u; }else{}
 
     
 #else  
     
     /* INB1 ~ INB8 */
-    if(ByteAnd[1] & 0x0040) inBuff[0] |= 0x01; else if(!(ByteOr[1] & 0x0040)) inBuff[0] &= ~0x01; 
-    if(ByteAnd[1] & 0x0020) inBuff[0] |= 0x02; else if(!(ByteOr[1] & 0x0020)) inBuff[0] &= ~0x02; 
-    if(ByteAnd[1] & 0x0010) inBuff[0] |= 0x04; else if(!(ByteOr[1] & 0x0010)) inBuff[0] &= ~0x04; 
-    if(ByteAnd[1] & 0x0008) inBuff[0] |= 0x08; else if(!(ByteOr[1] & 0x0008)) inBuff[0] &= ~0x08; 
-    if(ByteAnd[3] & 0x0080) inBuff[0] |= 0x10; else if(!(ByteOr[3] & 0x0080)) inBuff[0] &= ~0x10; 
-    if(ByteAnd[3] & 0x0040) inBuff[0] |= 0x20; else if(!(ByteOr[3] & 0x0040)) inBuff[0] &= ~0x20; 
-    if(ByteAnd[3] & 0x0020) inBuff[0] |= 0x40; else if(!(ByteOr[3] & 0x0020)) inBuff[0] &= ~0x40; 
-    if(ByteAnd[3] & 0x0010) inBuff[0] |= 0x80; else if(!(ByteOr[3] & 0x0010)) inBuff[0] &= ~0x80; 
+if(ByteAnd[1u] & 0x0040u){ inBuff[0u] |= 0x01u; } else if(!(ByteOr[1u] & 0x0040u)){ inBuff[0u] &= ~0x01u;}else{} 
+if(ByteAnd[1u] & 0x0020u){ inBuff[0u] |= 0x02u; } else if(!(ByteOr[1u] & 0x0020u)){ inBuff[0u] &= ~0x02u; }else{}
+if(ByteAnd[1u] & 0x0010u){ inBuff[0u] |= 0x04u; } else if(!(ByteOr[1u] & 0x0010u)){ inBuff[0u] &= ~0x04u; }else{}
+if(ByteAnd[1u] & 0x0008u){ inBuff[0u] |= 0x08u; } else if(!(ByteOr[1u] & 0x0008u)) {inBuff[0u] &= ~0x08u; }else{}
+if(ByteAnd[3u] & 0x0080u){ inBuff[0u] |= 0x10u; } else if(!(ByteOr[3u] & 0x0080u)) {inBuff[0u] &= ~0x10u; }else{}
+if(ByteAnd[3u] & 0x0040u){ inBuff[0u] |= 0x20u; } else if(!(ByteOr[3u] & 0x0040u)) {inBuff[0u] &= ~0x20u; }else{}
+if(ByteAnd[3u] & 0x0020u){ inBuff[0u] |= 0x40u; } else if(!(ByteOr[3u] & 0x0020u)) {inBuff[0u] &= ~0x40u; }else{}
+if(ByteAnd[3u] & 0x0010u){ inBuff[0u] |= 0x80u; } else if(!(ByteOr[3u] & 0x0010u)) {inBuff[0u] &= ~0x80u; }else{}
     
     /* INB9 ~ INB14 */
-    if(ByteAnd[3] & 0x0008) inBuff[1] |= 0x01; else if(!(ByteOr[3] & 0x0008)) inBuff[1] &= ~0x01; 
-    if(ByteAnd[3] & 0x0004) inBuff[1] |= 0x02; else if(!(ByteOr[3] & 0x0004)) inBuff[1] &= ~0x02; 
-    if(ByteAnd[3] & 0x0002) inBuff[1] |= 0x04; else if(!(ByteOr[3] & 0x0002)) inBuff[1] &= ~0x04; 
-    if(ByteAnd[3] & 0x0001) inBuff[1] |= 0x08; else if(!(ByteOr[3] & 0x0001)) inBuff[1] &= ~0x08; 
-    if(ByteAnd[2] & 0x1000) inBuff[1] |= 0x10; else if(!(ByteOr[2] & 0x1000)) inBuff[1] &= ~0x10; 
-    if(ByteAnd[2] & 0x0800) inBuff[1] |= 0x20; else if(!(ByteOr[2] & 0x0800)) inBuff[1] &= ~0x20;
+if(ByteAnd[3u] & 0x0008u){ inBuff[1u] |= 0x01u; } else if(!(ByteOr[3u] & 0x0008u)){ inBuff[1u] &= ~0x01u; }else{}
+if(ByteAnd[3u] & 0x0004u){ inBuff[1u] |= 0x02u; } else if(!(ByteOr[3u] & 0x0004u)){ inBuff[1u] &= ~0x02u; }else{}
+if(ByteAnd[3u] & 0x0002u) {inBuff[1u] |= 0x04u; } else if(!(ByteOr[3u] & 0x0002u)){ inBuff[1u] &= ~0x04u; }else{}
+if(ByteAnd[3u] & 0x0001u) {inBuff[1u] |= 0x08u; } else if(!(ByteOr[3u] & 0x0001u)) {inBuff[1u] &= ~0x08u; }else{}
+if(ByteAnd[2u] & 0x1000u) {inBuff[1u] |= 0x10u; } else if(!(ByteOr[2u] & 0x1000u)){ inBuff[1u] &= ~0x10u; }else{}
+if(ByteAnd[2u] & 0x0800u) {inBuff[1u] |= 0x20u; } else if(!(ByteOr[2u] & 0x0800u)) {inBuff[1u] &= ~0x20u;}else{}
     /* SFSW_INB1 ~ SFSW_INB2 */ 
-    if(ByteAnd[0] & 0x0008) inBuff[1] |= 0x40; else if(!(ByteOr[0] & 0x0008)) inBuff[1] &= ~0x40; 
-    if(ByteAnd[0] & 0x0010) inBuff[1] |= 0x80; else if(!(ByteOr[0] & 0x0010)) inBuff[1] &= ~0x80; 
+if(ByteAnd[0] & 0x0008u){ inBuff[1u] |= 0x40u; } else if(!(ByteOr[0] & 0x0008u)){ inBuff[1u] &= ~0x40u; }else{}
+if(ByteAnd[0] & 0x0010u) {inBuff[1u] |= 0x80u; } else if(!(ByteOr[0] & 0x0010u)) {inBuff[1u] &= ~0x80u; }else{}
     
     /* SFSW_INB3 ~ SFSW_INB10 */ 
-    if(ByteAnd[2] & 0x0010) inBuff[2] |= 0x01; else if(!(ByteOr[2] & 0x0010)) inBuff[2] &= ~0x01; 
-    if(ByteAnd[2] & 0x0020) inBuff[2] |= 0x02; else if(!(ByteOr[2] & 0x0020)) inBuff[2] &= ~0x02; 
-    if(ByteAnd[1] & 0x0001) inBuff[2] |= 0x04; else if(!(ByteOr[1] & 0x0001)) inBuff[2] &= ~0x04; 
-    if(ByteAnd[1] & 0x0002) inBuff[2] |= 0x08; else if(!(ByteOr[1] & 0x0002)) inBuff[2] &= ~0x08; 
-    if(ByteAnd[1] & 0x0004) inBuff[2] |= 0x10; else if(!(ByteOr[1] & 0x0004)) inBuff[2] &= ~0x10; 
-    if(ByteAnd[4] & 0x0080) inBuff[2] |= 0x20; else if(!(ByteOr[4] & 0x0080)) inBuff[2] &= ~0x20; 
-    if(ByteAnd[4] & 0x0100) inBuff[2] |= 0x40; else if(!(ByteOr[4] & 0x0100)) inBuff[2] &= ~0x40; 
-    if(ByteAnd[4] & 0x0200) inBuff[2] |= 0x80; else if(!(ByteOr[4] & 0x0200)) inBuff[2] &= ~0x80;
+    if(ByteAnd[2u] & 0x0010u) { inBuff[2u] |= 0x01u; } else if(!(ByteOr[2u] & 0x0010u)) { inBuff[2u] &= ~0x01u; }else{}
+    if(ByteAnd[2u] & 0x0020u) { inBuff[2u] |= 0x02u; } else if(!(ByteOr[2u] & 0x0020u)) { inBuff[2u] &= ~0x02u; }else{}
+    if(ByteAnd[1u] & 0x0001u) { inBuff[2u] |= 0x04u; } else if(!(ByteOr[1u] & 0x0001u)) { inBuff[2u] &= ~0x04u; }else{}
+    if(ByteAnd[1u] & 0x0002u) { inBuff[2u] |= 0x08u; } else if(!(ByteOr[1u] & 0x0002u)) { inBuff[2u] &= ~0x08u; }else{}
+    if(ByteAnd[1u] & 0x0004u) { inBuff[2u] |= 0x10u; } else if(!(ByteOr[1u] & 0x0004u)) { inBuff[2u] &= ~0x10u; }else{}
+    if(ByteAnd[4u] & 0x0080u) { inBuff[2u] |= 0x20u; } else if(!(ByteOr[4u] & 0x0080u)) { inBuff[2u] &= ~0x20u; }else{}
+    if(ByteAnd[4u] & 0x0100u) { inBuff[2u] |= 0x40u; } else if(!(ByteOr[4u] & 0x0100u)) { inBuff[2u] &= ~0x40u; }else{}
+    if(ByteAnd[4u] & 0x0200u) { inBuff[2u] |= 0x80u; } else if(!(ByteOr[4u] & 0x0200u)) { inBuff[2u] &= ~0x80u; }else{}
     
     /* SFSW_INB11 ~ SFSW_INB18 */ 
-    if(ByteAnd[4] & 0x0400) inBuff[3] |= 0x01; else if(!(ByteOr[4] & 0x0400)) inBuff[3] &= ~0x01; 
-    if(ByteAnd[4] & 0x0800) inBuff[3] |= 0x02; else if(!(ByteOr[4] & 0x0800)) inBuff[3] &= ~0x02;
-    if(ByteAnd[4] & 0x1000) inBuff[3] |= 0x04; else if(!(ByteOr[4] & 0x1000)) inBuff[3] &= ~0x04;
-    if(ByteAnd[4] & 0x2000) inBuff[3] |= 0x08; else if(!(ByteOr[4] & 0x2000)) inBuff[3] &= ~0x08; 
-    if(ByteAnd[4] & 0x4000) inBuff[3] |= 0x10; else if(!(ByteOr[4] & 0x4000)) inBuff[3] &= ~0x10; 
-    if(ByteAnd[4] & 0x8000) inBuff[3] |= 0x20; else if(!(ByteOr[4] & 0x8000)) inBuff[3] &= ~0x20;
-    if(ByteAnd[1] & 0x0400) inBuff[3] |= 0x40; else if(!(ByteOr[1] & 0x0400)) inBuff[3] &= ~0x40; 
-    if(ByteAnd[1] & 0x0800) inBuff[3] |= 0x80; else if(!(ByteOr[1] & 0x0800)) inBuff[3] &= ~0x80; 
+    if(ByteAnd[4u] & 0x0400u) { inBuff[3u] |= 0x01u; } else if(!(ByteOr[4u] & 0x0400u)) { inBuff[3u] &= ~0x01u; }else{}
+    if(ByteAnd[4u] & 0x0800u) { inBuff[3u] |= 0x02u; } else if(!(ByteOr[4u] & 0x0800u)) { inBuff[3u] &= ~0x02u; }else{}
+    if(ByteAnd[4u] & 0x1000u) { inBuff[3u] |= 0x04u; } else if(!(ByteOr[4u] & 0x1000u)) { inBuff[3u] &= ~0x04u; }else{}
+    if(ByteAnd[4u] & 0x2000u) { inBuff[3u] |= 0x08u; } else if(!(ByteOr[4u] & 0x2000u)) { inBuff[3u] &= ~0x08u; }else{}
+    if(ByteAnd[4u] & 0x4000u) { inBuff[3u] |= 0x10u; } else if(!(ByteOr[4u] & 0x4000u)) { inBuff[3u] &= ~0x10u; }else{}
+    if(ByteAnd[4u] & 0x8000u) { inBuff[3u] |= 0x20u; } else if(!(ByteOr[4u] & 0x8000u)) { inBuff[3u] &= ~0x20u; }else{}
+    if(ByteAnd[1u] & 0x0400u) { inBuff[3u] |= 0x40u; } else if(!(ByteOr[1u] & 0x0400u)) { inBuff[3u] &= ~0x40u; }else{}
+    if(ByteAnd[1u] & 0x0800u) { inBuff[3u] |= 0x80u; } else if(!(ByteOr[1u] & 0x0800u)) { inBuff[3u] &= ~0x80u; }else{}
  
     
 #endif    
@@ -163,14 +163,14 @@ void Get_GpioInput(u8 inBuff[])
 *******************************************************************************/
 void output_driver(u8 out_buff[])
 {
-	if(out_buff[0] & 0x01) 		RELAY_OC1_ON(); 		else RELAY_OC1_OFF(); 					  
-	if(out_buff[0] & 0x02) 		RELAY_OC2_ON(); 		else RELAY_OC2_OFF(); 	 					  
-	if(out_buff[0] & 0x04) 		RELAY_OC3_ON(); 		else RELAY_OC3_OFF();	 					  
-	if(out_buff[0] & 0x08)  	RELAY_OC4_ON(); 		else RELAY_OC4_OFF(); 						  
-	if(out_buff[0] & 0x10)  	RELAY_OC5_ON(); 		else RELAY_OC5_OFF(); 					  
-	if(out_buff[0] & 0x20)  	TRAN_OC1_ON(); 		else TRAN_OC1_OFF();				  
-	if(out_buff[0] & 0x40)  	TRAN_OC2_ON(); 		else TRAN_OC2_OFF();				  
-	if(out_buff[0] & 0x80)		TRAN_OC3_ON(); 		else TRAN_OC3_OFF(); 	
+    if(out_buff[0] & 0x01u)  { 	RELAY_OC1_ON(); }	else {RELAY_OC1_OFF(); 	}				  
+    if(out_buff[0] & 0x02u)  {	RELAY_OC2_ON(); }	else {RELAY_OC2_OFF(); 	 }					  
+    if(out_buff[0] & 0x04u)  {	RELAY_OC3_ON(); }	else {RELAY_OC3_OFF();	} 					  
+    if(out_buff[0] & 0x08u)  {	RELAY_OC4_ON(); }	else {RELAY_OC4_OFF(); 	}					  
+    if(out_buff[0] & 0x10u)  {	RELAY_OC5_ON(); }	else {RELAY_OC5_OFF(); 	}				  
+    if(out_buff[0] & 0x20u)  {	TRAN_OC1_ON(); 	}	else {TRAN_OC1_OFF();	}		  
+    if(out_buff[0] & 0x40u)  {	TRAN_OC2_ON(); 	}	else {TRAN_OC2_OFF();	}		  
+    if(out_buff[0] & 0x80u)  {	TRAN_OC3_ON(); 	}	else {TRAN_OC3_OFF(); 	}
  
 }
 #endif
@@ -187,7 +187,7 @@ void output_driver(u8 out_buff[])
 u8 ReadSwDp(void)
 {
     u8 swdp[4] = {0};
-    u8 value;
+    u8 value = 0u;
 
 #ifdef GEC_DBL2_MASTER 
     swdp[0] = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_8);
@@ -202,7 +202,7 @@ u8 ReadSwDp(void)
     swdp[3] = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_9);
 #endif
     
-    value = ( ((~swdp[3])&0x01) << 3 ) | ( ((~swdp[2])&0x01) << 2 ) | ( ((~swdp[1])&0x01) << 1 ) | ( ((~swdp[0])&0x01) << 0 );
+    value = ( ((u8)(~swdp[3])&0x01u) << 3u ) | ( ((u8)(~swdp[2])&0x01u) << 2u ) | ( ((u8)(~swdp[1])&0x01u) << 1u ) | ( ((u8)(~swdp[0])&0x01u) << 0u );
     
     return   value;
 }
@@ -219,15 +219,15 @@ u8 ReadSwDp(void)
 void DBL2GetAdr(void)
 {
 
-  u8 adr_temp=0;
-  static u8 adr_pre=0;
-  static u16 adr_cnt=0;
+  u8 adr_temp=0u;
+  static u8 adr_pre=0u;
+  static u16 adr_cnt=0u;
   
   adr_temp = ReadSwDp();
   
   if(adr_temp == adr_pre)
   {
-      if(adr_cnt>100)
+      if(adr_cnt>100u)
       {  
           switch(adr_temp)
           {
@@ -236,7 +236,7 @@ void DBL2GetAdr(void)
              case 0x02u: EscData.SwdpAdr = DBL2_LOWER_ADDR;break; 
              case 0x04u: EscData.SwdpAdr = DBL2_INTERM1_ADDR;break; 
              case 0x08u: EscData.SwdpAdr = DBL2_INTERM2_ADDR;break;              
-             default:EscData.SwdpAdr = 0; 
+             default:EscData.SwdpAdr = 0u; break;
           }
       }
       else
@@ -246,7 +246,7 @@ void DBL2GetAdr(void)
   }  
   else
   {
-      adr_cnt = 0;
+      adr_cnt = 0u;
   }  
   
   adr_pre = adr_temp;

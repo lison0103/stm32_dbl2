@@ -69,12 +69,19 @@ typedef struct dbl2escdata
 #define 	EN_ERROR9   	EscData.ErrorBuff[8]
 #define 	EN_ERROR10   	EscData.ErrorBuff[9]
 
+/* led flash freq */
+#define FREQ_0_5HZ      500u
+#define FREQ_2HZ        125u
+
+
 #define ESC_RT_DATA_LEN    sizeof(DBL2EscData)
 
 /* Exported functions ------------------------------------------------------- */
 
 extern DBL2EscData EscData;
 extern DBL2EscData OmcEscData;
+
+extern u16 g_u8LedFreq;
 
 /* safety board data */
 extern u8 EscDataToSafety[4][8];

@@ -161,7 +161,7 @@ u8 SPI_MAX31865_Init(void)
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;                                                                                     
     SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256;         
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;                                                            
-    SPI_InitStructure.SPI_CRCPolynomial = 7;
+    SPI_InitStructure.SPI_CRCPolynomial = 7u;
     SPI_Init(SPI_MAX31865_SPI, &SPI_InitStructure);
 
     SPI_RxFIFOThresholdConfig(SPI_MAX31865_SPI, SPI_RxFIFOThreshold_QF);
@@ -186,28 +186,43 @@ u8 SPI_MAX31865_Init(void)
 *******************************************************************************/
 static u8 SPI_ReadWriteByte(u8 TxData)
 {		
-	u16 retry=0;				 
-	while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_TXE) == RESET)		
-	{
-		retry++;
-		if(retry>=0XFFFE)
-                {
-                    return 0; 	
-                }
-	}			  
-	SPI_SendData8(SPI_MAX31865_SPI, TxData);
+    u16 retry = 0u;
+    u8 error,result = 0u;				 
+    while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_TXE) == RESET)		
+    {
+        retry++;
+        if(retry >= 0XFFFEu)
+        {
+            error = 1u; 	
+        }
+    }	
+    
+    if( !error )
+    {
+        SPI_SendData8(SPI_MAX31865_SPI, TxData);
         
-	retry=0;
+        retry=0u;
         
-	while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_RXNE) == RESET) 		
-	{
-		retry++;
-		if(retry>=0XFFFE)
-                {
-                    return 0;	
-                }
-	}	
-	return SPI_ReceiveData8(SPI_MAX31865_SPI);          						    
+        while (SPI_I2S_GetFlagStatus(SPI_MAX31865_SPI, SPI_I2S_FLAG_RXNE) == RESET) 		
+        {
+            retry++;
+            if(retry>=0XFFFEu)
+            {
+                error = 1u; 	
+            }
+        }	
+    }
+    
+    if( error == 1u )
+    {
+        result = 0u;
+    }
+    else
+    {
+        result = SPI_ReceiveData8(SPI_MAX31865_SPI); 
+    }
+    
+    return result;         						    
 }
 
 
@@ -235,11 +250,11 @@ static void SPI_MAX31865_Write(u8 address, u8 value)
 *******************************************************************************/
 static u8 SPI_MAX31865_Read(u8 address)         
 {
-    u8 value = 0;
+    u8 value = 0u;
     
     SPI_MAX31865_CS_LOW();  
     SPI_ReadWriteByte(address);                   
-    value = SPI_ReadWriteByte(0x00);   
+    value = SPI_ReadWriteByte(0x00u);   
     SPI_MAX31865_CS_HIGH();
     
     return value;
@@ -296,9 +311,9 @@ static u8 get_Temperature(void)
     if( fault_test == 0u ) 								
     {
         msb_rtd = SPI_MAX31865_Read(Read_RTD_MSB);					
-        RTD = ((msb_rtd << 7u) + ((lsb_rtd & 0xFEu) >> 1u)); 
+        RTD = (((u16)msb_rtd << 7u) + (((u16)lsb_rtd & 0xFEu) >> 1u)); 
         
-        temperature = ( RTD / 32u );
+        temperature = (u8)( RTD / 32u );
     }
     
     return temperature;

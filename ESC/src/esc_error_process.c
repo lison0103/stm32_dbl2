@@ -35,19 +35,7 @@ int ErrorBuff[10] = {0};
 void ESC_EWDT_Error_Process(void)
 {
  
-   
-//    while(1)
-//    {
-        /** In the error handling routine in an infinite loop **/
-          /**  Wait manual reset fault **/
-//          if( IN10 )
-//          {
-//                __set_FAULTMASK(1);   
-//                /** soft reset **/
-//                NVIC_SystemReset();
-//          
-//          }
-//    }
+
 
 }
 

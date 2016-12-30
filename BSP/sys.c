@@ -19,19 +19,6 @@
 
 
 
-/*******************************************************************************
-* Function Name  : fputc
-* Description    : Redefine fputc function to support printf function.
-*                  
-* Input          : None
-*                 
-* Output         : None
-* Return         : None
-*******************************************************************************/  
-int fputc(int ch, FILE *f)
-{      
-      return ch;
-}
 
 /*******************************************************************************
 * Function Name  : WFI_SET
@@ -80,7 +67,7 @@ void INTX_ENABLE(void)
 *******************************************************************************/ 
 void MSR_MSP(u32 addr) 
 {
-    __ASM("MSR MSP, r0"); 			//set Main Stack value
+    __ASM("MSR MSP, r0"); 			
     __ASM("BX r14");
 }
 

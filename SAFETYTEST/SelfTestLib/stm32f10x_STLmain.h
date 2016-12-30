@@ -22,9 +22,12 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
+#define RUNCHECK_TIME_PERIOD    ( 300u * 1000u )   /* ms */
+
 /* Exported functions ------------------------------------------------------- */
 void Safety_InitRunTimeChecks(void);
 void Safety_RunCheck1(void);
+void Safety_TimingCheck(void);
 
 #endif /* __STL_MAIN_H */
 

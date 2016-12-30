@@ -158,25 +158,12 @@ void SysTick_Handler(void)
 void PVD_IRQHandler(void)
 {
     /* store data */
-    while(1);
+    while(1)
+    {
+    }
 }
 
-/*******************************************************************************
-* Function Name  : USB_IRQHandler
-* Description    : This function handles USB Low Priority interrupts
-*                  requests.
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-//#if defined(STM32L1XX_MD) || defined(STM32L1XX_HD)|| defined(STM32L1XX_MD_PLUS)|| defined (STM32F37X)
-//void USB_LP_IRQHandler(void)
-//#else
-//void USB_LP_CAN1_RX0_IRQHandler(void)
-//#endif
-//{
-//  USB_Istr();
-//}
+
 
 /******************************************************************************/
 /*                 STM32F30x Peripherals Interrupt Handlers                   */

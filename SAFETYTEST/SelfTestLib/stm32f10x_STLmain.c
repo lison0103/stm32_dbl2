@@ -15,7 +15,6 @@
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-//#include "stm32f10x_lib.h"
 #include "stm32f10x_STLlib.h"
 #include "stm32f10x_STLclassBvar.h"
 
@@ -27,16 +26,21 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static u8 g_u8RomCheckOkFlag = 0u;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-ClockStatus STL_MainClockTest(void);
-ErrorStatus STL_CheckStack(void);
-
+static ClockStatus STL_MainClockTest(void);
+static ErrorStatus STL_CheckStack(void);
+static void GeneralRegister_RunCheck(void);
+static void Stack_RunCheck(void);
+static void ClockFrequency_RunCheck(void);
+static void DataIntegrityInFlash_RunCheck(u32* RomTest);
 
 /*******************************************************************************
 * Function Name  : Safety_InitRunTimeChecks
 * Description    : Initializes the Class B variables and their inverted
-*                  redundant counterparts. Init also the Systick and RTC timer
+*                  redundant counterparts. Init also the Timer and RTC timer
 *                  for clock frequency monitoring.
 * Input          : None
 * Output         : None
@@ -44,31 +48,31 @@ ErrorStatus STL_CheckStack(void);
 *******************************************************************************/
 void Safety_InitRunTimeChecks(void)
 {
-  /* Init Class B variables required in main routine and SysTick interrupt
+  /* Init Class B variables required in main routine and Timer interrupt
   service routine for timing purposes */
-  TickCounter = 0;
+  TickCounter = 0u;
   TickCounterInv = 0xFFFFFFFFuL;
 
-  TimeBaseFlag = 0;
+  TimeBaseFlag = 0u;
   TimeBaseFlagInv = 0xFFFFFFFFuL;
 
-  LastCtrlFlowCnt = 0;
+  LastCtrlFlowCnt = 0u;
   LastCtrlFlowCntInv = 0xFFFFFFFFuL;
 
-  /* Initialize variables for SysTick interrupt routine control flow monitoring */
-  ISRCtrlFlowCnt = 0;
+  /* Initialize variables for Timer interrupt routine control flow monitoring */
+  ISRCtrlFlowCnt = 0u;
   ISRCtrlFlowCntInv = 0xFFFFFFFFuL;
 
   /* Initialize variables for invariable memory check */
   STL_TranspMarchCInit();
-//  STL_TranspMarchXInit();
+/*  STL_TranspMarchXInit();*/
 
   /* Initialize variable for clock memory check */
-  CurrentHSEPeriod = 0;
+  CurrentHSEPeriod = 0u;
   CurrentHSEPeriodInv = 0xFFFFFFFFuL;
 
-  /* Initialize SysTick for clock frequency measurement and main time base */
-  /* The RTC is also reset and synchronized to do measures in SysTick ISR */
+  /* Initialize Timer for clock frequency measurement and main time base */
+  /* The RTC is also reset and synchronized to do measures in Timer ISR */
   STL_SysTickRTCSync();
 
   /* Initialize variables for invariable memory check */
@@ -76,7 +80,7 @@ void Safety_InitRunTimeChecks(void)
   STL_FlashCrc32Init();
 
   /* Initialize variables for main routine control flow monitoring */
-  CtrlFlowCnt = 0;
+  CtrlFlowCnt = 0u;
   CtrlFlowCntInv = 0xFFFFFFFFuL;
 
 }
@@ -88,7 +92,7 @@ void Safety_InitRunTimeChecks(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void GeneralRegister_RunCheck(void)
+static void GeneralRegister_RunCheck(void)
 {
     CtrlFlowCnt += CPU_TEST_CALLER;
     if (STL_RunTimeCPUTest() != CPUTEST_SUCCESS)
@@ -112,7 +116,7 @@ void GeneralRegister_RunCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void Stack_RunCheck(void)
+static void Stack_RunCheck(void)
 {
     CtrlFlowCnt += STACK_OVERFLOW_TEST;
     if (STL_CheckStack() != SUCCESS)
@@ -136,7 +140,7 @@ void Stack_RunCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ClockFrequency_RunCheck(void)
+static void ClockFrequency_RunCheck(void)
 {
     CtrlFlowCnt += CLOCK_TEST_CALLER;
     switch ( STL_MainClockTest() )
@@ -148,11 +152,7 @@ void ClockFrequency_RunCheck(void)
        case EXT_SOURCE_FAIL:
 #ifdef STL_VERBOSE
         /* Loop until the end of current transmission */
-        //            while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
-        //            {
-        //            }
         /* Re-config USART baudrate FOR 115200 bds with HSI clock (8MHz) */
-        //            USART1->BRR = 0x45u;
         printf("\n\r Clock Source failure (Run-time)\n\r");
 #endif /* STL_VERBOSE */
         FailSafePOR();
@@ -187,17 +187,15 @@ void ClockFrequency_RunCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void DataIntegrityInFlash_RunCheck(u32* RomTest)
+static void DataIntegrityInFlash_RunCheck(u32* RomTest)
 {
     CtrlFlowCnt += FLASH_TEST_CALLER;
-    *RomTest = STL_crc16Run();
-    //      RomTest = STL_crc32Run(); // Requires the control flow check to be modified
+    /* *RomTest = STL_crc16Run();*/
+    *RomTest = STL_crc32Run();
     switch ( *RomTest )
     {
        case TEST_RUNNING:
-        //          #ifdef STL_VERBOSE
         CtrlFlowCntInv -= FLASH_TEST_CALLER;
-        //          #endif /* STL_VERBOSE */
         break;
         
        case TEST_OK:
@@ -228,6 +226,16 @@ void DataIntegrityInFlash_RunCheck(u32* RomTest)
 *******************************************************************************/
 void Safety_RunCheck1(void)
 {
+    static u32 stat_u32CheckTimePeriod = 0u;
+    
+    stat_u32CheckTimePeriod++;
+    if( ( stat_u32CheckTimePeriod * 5u ) >= RUNCHECK_TIME_PERIOD )
+    {
+        stat_u32CheckTimePeriod = 0u;
+        Safety_InitRunTimeChecks();
+    }
+    
+    
   /* Is the time base duration elapsed? */
   if (TimeBaseFlag == 0xAAAAAAAAuL)
   {
@@ -237,13 +245,13 @@ void Safety_RunCheck1(void)
     if ((TimeBaseFlag ^ TmpFlag) == 0xFFFFFFFFuL)
     {
         u32 RomTest;
+        
+        stat_u32CheckTimePeriod = 0u;
 
       /* Reset Flag (no need to reset the redundant: it is not tested if
       TimeBaseFlag != 0xAAAAAAAA, it means that 100ms elapsed */
-      TimeBaseFlag = 0;
+      TimeBaseFlag = 0u;
 
-      /* For debug purposes */
-      //GPIO_WriteBit(GPIOC, GPIO_Pin_7, (BitAction)(1-GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_7)));
 
       /*----------------------------------------------------------------------*/
       /*---------------------------- CPU registers ----------------------------*/
@@ -270,8 +278,6 @@ void Safety_RunCheck1(void)
       /*---------------- Check Safety routines Control flow  -----------------*/
       /*------------- Refresh Window and independent watchdogs ---------------*/
       /*----------------------------------------------------------------------*/
-      /* Update WWDG counter */
-//      WWDG_SetCounter(0x7F);
       /* Reload IWDG counter */
       IWDG_ReloadCounter();
 
@@ -280,21 +286,33 @@ void Safety_RunCheck1(void)
       {
         if (RomTest == TEST_OK)
         {
-          if ((CtrlFlowCnt == FULL_FLASH_CHECKED)
-          &&(CtrlFlowCnt - LastCtrlFlowCnt) == (LAST_DELTA_MAIN))
-          {
-            CtrlFlowCnt = 0;
-            CtrlFlowCntInv = 0xFFFFFFFFuL;
-          }
-          else  /* Return value form crc check was corrupted */
-          {
-            #ifdef STL_VERBOSE
-              printf("Control Flow Error (main loop, Flash CRC)\n\r");
-            #endif  /* STL_VERBOSE */
-            FailSafePOR();
-          }
+            if(CtrlFlowCnt == FULL_FLASH_CHECKED)
+            {
+                if((CtrlFlowCnt - LastCtrlFlowCnt) == (LAST_DELTA_MAIN))
+                {
+                    CtrlFlowCnt = 0u;
+                    CtrlFlowCntInv = 0xFFFFFFFFuL;
+                    
+                    /* Rom test ok */
+                    g_u8RomCheckOkFlag = 1u;
+                }
+                else  /* Return value form crc check was corrupted */
+                {
+                  #ifdef STL_VERBOSE
+                    printf("Control Flow Error (main loop, Flash CRC)\n\r");
+                  #endif  /* STL_VERBOSE */
+                    FailSafePOR();
+                }
+            }                
+            else  /* Return value form crc check was corrupted */
+            {
+              #ifdef STL_VERBOSE
+                printf("Control Flow Error (main loop, Flash CRC)\n\r");
+              #endif  /* STL_VERBOSE */
+                FailSafePOR();
+            }
         }
-        else  // Flash test not completed yet
+        else  /* Flash test not completed yet*/
         {
           if ((CtrlFlowCnt - LastCtrlFlowCnt) != DELTA_MAIN)
           {
@@ -314,14 +332,16 @@ void Safety_RunCheck1(void)
           printf("Control Flow Error (main loop)\n\r");
         #endif  /* STL_VERBOSE */
         FailSafePOR();
+        g_u16RunTestError = 1u;
       }
     } /* End of periodic Self-test routine */
-    else  /* Class B variable error (can be Systick interrupt lost) */
+    else  /* Class B variable error (can be Timer interrupt lost) */
     {
       #ifdef STL_VERBOSE
         printf("\n\r Class B variable error (clock test)\n\r");
       #endif  /* STL_VERBOSE */
       FailSafePOR();
+      g_u16RunTestError = 1u;
     }
   } /* End of periodic Self-test routine */
 
@@ -337,25 +357,12 @@ void Safety_RunCheck1(void)
 *                  HSI_HSE_SWITCH_FAIL; TEST_ONGOING; EXT_SOURCE_FAIL;
 *                  CLASS_B_VAR_FAIL, CTRL_FLOW_ERROR, FREQ_OK}
 *******************************************************************************/
-ClockStatus STL_MainClockTest(void)
+static ClockStatus STL_MainClockTest(void)
 {
     ClockStatus Result = TEST_ONGOING; /* In case of unexpected exit */
 
   CtrlFlowCnt += CLOCK_TEST_CALLEE;
   
-  
-//          RTC_SetCounter(0);                            /* Reset RTC */
-//        RTC_WaitForLastTask();
-//        SysTick->VAL =0X00;//SysTick_CounterCmd(SysTick_Counter_Clear);    /* Reset SysTick counter */
-//
-//        /* Wait Systick underflow before measurement */
-//        while (!(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk))
-//        {
-//        }
-//        
-//        /*-------------------- HSE Measurement -------------------------------*/
-//        CurrentHSEPeriod = RTC_GetCounter();   /* HSE frequency measurement */
-//        CurrentHSEPeriodInv = ~CurrentHSEPeriod;   /* Redundant storage */
 
   if ((CurrentHSEPeriod ^ CurrentHSEPeriodInv) == 0xFFFFFFFFuL)
   {
@@ -387,7 +394,7 @@ ClockStatus STL_MainClockTest(void)
 * Output         : None
 * Return         : ErrorStatus = {ERROR; SUCCESS}
 *******************************************************************************/
-ErrorStatus STL_CheckStack(void)
+static ErrorStatus STL_CheckStack(void)
 {
     ErrorStatus Result = ERROR;
 
@@ -428,4 +435,123 @@ ErrorStatus STL_CheckStack(void)
   return (Result);
 
 }
+
+/*******************************************************************************
+* Function Name  : Safety_TimingCheck
+* Description    : This function for safety running check.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void Safety_TimingCheck(void)
+{
+        
+    /* Verify TickCounter integrity */
+    if ((TickCounter ^ TickCounterInv) == 0xFFFFFFFFuL)
+    {
+        TickCounter++;
+        TickCounterInv = ~TickCounter;
+        
+        if (TickCounter >= SYSTICK_20ms_TB)
+        {
+            u32 RamTestResult;
+            
+            /* Reset timebase counter */
+            TickCounter = 0u;
+            TickCounterInv = 0xFFFFFFFFu;
+            
+            /* Set Flag read in main loop */
+            TimeBaseFlag = 0xAAAAAAAAu;
+            TimeBaseFlagInv = 0x55555555u;
+            
+            if ((CurrentHSEPeriod ^ CurrentHSEPeriodInv) == 0xFFFFFFFFuL)
+            {
+                ISRCtrlFlowCnt += MEASPERIOD_ISR_CALLER;
+                CurrentHSEPeriod = STL_MeasurePeriod();
+                CurrentHSEPeriodInv = ~CurrentHSEPeriod;
+                ISRCtrlFlowCntInv -= MEASPERIOD_ISR_CALLER;
+            }
+            else  /* Class B Error on CurrentHSEPeriod */
+            {
+#ifdef STL_VERBOSE
+                printf("\n\r Class B Error on CurrentHSEPeriod \n\r");
+#endif  /* STL_VERBOSE */
+            }
+            
+            ISRCtrlFlowCnt += RAM_MARCHC_ISR_CALLER;
+            RamTestResult = RAM_RunCheck();
+            ISRCtrlFlowCntInv -= RAM_MARCHC_ISR_CALLER;
+            /*
+            ISRCtrlFlowCnt += RAM_MARCHX_ISR_CALLER;
+            RamTestResult = STL_TranspMarchX();
+            ISRCtrlFlowCntInv -= RAM_MARCHX_ISR_CALLER;
+            */
+            switch ( RamTestResult )
+            {
+               case TEST_RUNNING:
+                break;
+               case TEST_OK:
+#ifdef STL_VERBOSE                
+                printf("\n\r Full RAM verified (Run-time)\n\r");                 
+#endif  /* STL_VERBOSE */
+                break;
+               case TEST_FAILURE:
+               case CLASS_B_DATA_FAIL:
+               default:
+#ifdef STL_VERBOSE
+                /* >>>>>>>>>>>>>>>>>>>  RAM Error (March C- Run-time check) */
+#endif  /* STL_VERBOSE */
+                FailSafePOR();
+                break;
+            } /* End of the switch */
+            
+            /* Do we reached the end of RAM test? */
+            /* Verify 1st ISRCtrlFlowCnt integrity */
+            if ((ISRCtrlFlowCnt ^ ISRCtrlFlowCntInv) == 0xFFFFFFFFuL)
+            {
+                if (RamTestResult == TEST_OK)
+                {
+                    if (ISRCtrlFlowCnt != RAM_TEST_COMPLETED)
+                    {
+#ifdef STL_VERBOSE
+                        /* Control Flow error (RAM test) */
+#endif  /* STL_VERBOSE */
+                        FailSafePOR();
+                    }
+                    else  /* Full RAM was scanned */
+                    {
+                        ISRCtrlFlowCnt = 0u;
+                        ISRCtrlFlowCntInv = 0xFFFFFFFFu;
+                        
+                        /* Rom test is ok ? */
+                        if( g_u8RomCheckOkFlag == 1u )
+                        {
+                            /* Full RAM check ok, disable Timer */
+                            TIM_Cmd(TIM4, DISABLE);
+                            RCC_RTCCLKCmd(DISABLE);
+                            g_u8RomCheckOkFlag = 0u;
+                        }
+                    }
+                } /* End of RAM completed if*/
+            } /* End of control flow monitoring */
+            else
+            {
+#ifdef STL_VERBOSE
+                /* Control Flow error in ISR */
+#endif  /* STL_VERBOSE */
+                FailSafePOR();
+            }
+        } /* End of the 20 ms timebase interrupt */
+    }
+    else  /* Class error on TickCounter */
+    {
+#ifdef STL_VERBOSE
+        printf("\n\r Class B Error on TickCounter\n\r");
+#endif  /* STL_VERBOSE */
+        FailSafePOR();
+    }          
+
+}
+
+
 /******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE****/

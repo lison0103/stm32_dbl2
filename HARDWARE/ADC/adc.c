@@ -16,13 +16,13 @@
 #define ADC_CDR_ADDRESS    ((uint32_t)0x5000030C)
 
 /* Private macro -------------------------------------------------------------*/
-#define Sample_Num       5
+#define Sample_Num       5u
 
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-__IO uint16_t ADCDualConvertedValue[Sample_Num][2];
-__IO uint16_t calibration_value = 0;
+static __IO uint16_t ADCDualConvertedValue[Sample_Num][2];
+static __IO uint32_t calibration_value = 0u;
 	   
 /*******************************************************************************
 * Function Name  : Adc_Init
@@ -60,7 +60,7 @@ void  Adc_Init(void)
     DMA_InitStructure.DMA_PeripheralBaseAddr = ADC_CDR_ADDRESS;
     DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&ADCDualConvertedValue;
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = Sample_Num*2;
+    DMA_InitStructure.DMA_BufferSize = Sample_Num*2u;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -77,12 +77,13 @@ void  Adc_Init(void)
     ADC_VoltageRegulatorCmd(ADC1, ENABLE);
     
     /* Insert delay equal to 10  */
-    delay_us(10);
+    delay_us(10u);
     
     ADC_SelectCalibrationMode(ADC1, ADC_CalibrationMode_Single);
     ADC_StartCalibration(ADC1);
     
-    while(ADC_GetCalibrationStatus(ADC1) != RESET );
+    while(ADC_GetCalibrationStatus(ADC1) != RESET )
+    {}
     calibration_value = ADC_GetCalibrationValue(ADC1);
     
     
@@ -90,7 +91,7 @@ void  Adc_Init(void)
     ADC_CommonInitStructure.ADC_Clock = ADC_Clock_AsynClkMode;                    
     ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_1;             
     ADC_CommonInitStructure.ADC_DMAMode = ADC_DMAMode_Circular;                  
-    ADC_CommonInitStructure.ADC_TwoSamplingDelay = 0xf;          
+    ADC_CommonInitStructure.ADC_TwoSamplingDelay = 0xfu;          
     
     ADC_CommonInit(ADC1, &ADC_CommonInitStructure);
     
@@ -101,12 +102,12 @@ void  Adc_Init(void)
     ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
     ADC_InitStructure.ADC_OverrunMode = ADC_OverrunMode_Disable;   
     ADC_InitStructure.ADC_AutoInjMode = ADC_AutoInjec_Disable;  
-    ADC_InitStructure.ADC_NbrOfRegChannel = 2;
+    ADC_InitStructure.ADC_NbrOfRegChannel = 2u;
     ADC_Init(ADC1, &ADC_InitStructure);
     
     /* ADC1 regular channel1 and channel2 configuration */ 
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1, ADC_SampleTime_601Cycles5); 
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_2, 2, ADC_SampleTime_601Cycles5); 
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 1u, ADC_SampleTime_601Cycles5); 
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_2, 2u, ADC_SampleTime_601Cycles5); 
 
     /* Configures the ADC DMA */
     ADC_DMAConfig(ADC1, ADC_DMAMode_Circular);
@@ -117,7 +118,8 @@ void  Adc_Init(void)
     ADC_Cmd(ADC1, ENABLE);
     
     /* wait for ADCRDY */
-    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_RDY));
+    while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_RDY))
+    {}
 
     /* Enable the DMA channel */
     DMA_Cmd(DMA1_Channel1, ENABLE);
@@ -140,7 +142,8 @@ void  Adc_Init(void)
 u16 Get_Adc(void)   
 {  	
 	 
-	while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ));
+	while(!ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC ))
+        {}
 
 	return ADC_GetConversionValue(ADC1);	
 }
@@ -155,17 +158,17 @@ u16 Get_Adc(void)
 * Output         : None
 * Return         : The average adc value of ADC1 channel. 
 *******************************************************************************/
-s32 Get_Adc_Average(u8 channel)
+u32 Get_Adc_Average(u8 channel)
 {
         uint8_t i;
-        uint32_t sum = 0;
+        uint32_t sum = 0u;
 
-        for( i = 0; i < Sample_Num; i++ )
+        for( i = 0u; i < Sample_Num; i++ )
         {
-            sum += ADCDualConvertedValue[i][channel - 1];
+            sum += ADCDualConvertedValue[i][channel - 1u];
         }
 
-        return (sum*60/4096/Sample_Num);
+        return (sum*60u/4096u/Sample_Num);
         
 } 	 
 

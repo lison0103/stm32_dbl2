@@ -204,15 +204,15 @@ typedef struct
 /** @defgroup ADC_external_trigger_edge_for_Injected_channels_conversion 
   * @{
   */     
-#define ADC_ExternalTrigInjecEventEdge_None		     ((uint16_t)0x0000)    /*!<  ADC No external trigger for regular conversion */
-#define ADC_ExternalTrigInjecEventEdge_RisingEdge	 ((uint16_t)0x0040)    /*!<  ADC external trigger rising edge for injected conversion */
-#define ADC_ExternalTrigInjecEventEdge_FallingEdge	 ((uint16_t)0x0080)  /*!<  ADC external trigger falling edge for injected conversion */
-#define ADC_ExternalTrigInjecEventEdge_BothEdge	     ((uint16_t)0x00C0)  /*!<  ADC external trigger both edges for injected conversion */
+#define ADC_ExternalEventEdge_None		     ((uint16_t)0x0000)    /*!<  ADC No external trigger for regular conversion */
+#define ADC_ExternalEventEdge_RisingEdge	 ((uint16_t)0x0040)    /*!<  ADC external trigger rising edge for injected conversion */
+#define ADC_ExternalEventEdge_FallingEdge	 ((uint16_t)0x0080)  /*!<  ADC external trigger falling edge for injected conversion */
+#define ADC_ExternalEventEdge_BothEdge	     ((uint16_t)0x00C0)  /*!<  ADC external trigger both edges for injected conversion */
 
-#define IS_EXTERNALTRIGINJ_EDGE(EDGE) (((EDGE) == ADC_ExternalTrigInjecEventEdge_None) || \
-                                       ((EDGE) == ADC_ExternalTrigInjecEventEdge_RisingEdge) || \
-                                       ((EDGE) == ADC_ExternalTrigInjecEventEdge_FallingEdge) || \
-                                       ((EDGE) == ADC_ExternalTrigInjecEventEdge_BothEdge))
+#define IS_EXTERNALTRIGINJ_EDGE(EDGE) (((EDGE) == ADC_ExternalEventEdge_None) || \
+                                       ((EDGE) == ADC_ExternalEventEdge_RisingEdge) || \
+                                       ((EDGE) == ADC_ExternalEventEdge_FallingEdge) || \
+                                       ((EDGE) == ADC_ExternalEventEdge_BothEdge))
   
 /** @defgroup ADC_external_trigger_sources_for_regular_channels_conversion 
   * @{
@@ -259,39 +259,39 @@ typedef struct
   * @{
   */
         
-#define ADC_ExternalTrigInjecConvEvent_0              ((uint16_t)0x0000)  /*!<  ADC external trigger for injected conversion event 0 */
-#define ADC_ExternalTrigInjecConvEvent_1              ((uint16_t)0x0004)  /*!<  ADC external trigger for injected conversion event 1 */
-#define ADC_ExternalTrigInjecConvEvent_2              ((uint16_t)0x0008)  /*!<  ADC external trigger for injected conversion event 2 */
-#define ADC_ExternalTrigInjecConvEvent_3              ((uint16_t)0x000C)  /*!<  ADC external trigger for injected conversion event 3 */
-#define ADC_ExternalTrigInjecConvEvent_4              ((uint16_t)0x0010)  /*!<  ADC external trigger for injected conversion event 4 */
-#define ADC_ExternalTrigInjecConvEvent_5              ((uint16_t)0x0014)  /*!<  ADC external trigger for injected conversion event 5 */
-#define ADC_ExternalTrigInjecConvEvent_6              ((uint16_t)0x0018)  /*!<  ADC external trigger for injected conversion event 6 */
-#define ADC_ExternalTrigInjecConvEvent_7              ((uint16_t)0x001C)  /*!<  ADC external trigger for injected conversion event 7 */
-#define ADC_ExternalTrigInjecConvEvent_8              ((uint16_t)0x0020)  /*!<  ADC external trigger for injected conversion event 8 */
-#define ADC_ExternalTrigInjecConvEvent_9              ((uint16_t)0x0024)  /*!<  ADC external trigger for injected conversion event 9 */
-#define ADC_ExternalTrigInjecConvEvent_10             ((uint16_t)0x0028)  /*!<  ADC external trigger for injected conversion event 10 */
-#define ADC_ExternalTrigInjecConvEvent_11             ((uint16_t)0x002C)  /*!<  ADC external trigger for injected conversion event 11 */
-#define ADC_ExternalTrigInjecConvEvent_12             ((uint16_t)0x0030)  /*!<  ADC external trigger for injected conversion event 12 */
-#define ADC_ExternalTrigInjecConvEvent_13             ((uint16_t)0x0034)  /*!<  ADC external trigger for injected conversion event 13 */
-#define ADC_ExternalTrigInjecConvEvent_14             ((uint16_t)0x0038)  /*!<  ADC external trigger for injected conversion event 14 */
-#define ADC_ExternalTrigInjecConvEvent_15             ((uint16_t)0x003C)  /*!<  ADC external trigger for injected conversion event 15 */
+#define ADC_ExternalConvEvent_0              ((uint16_t)0x0000)  /*!<  ADC external trigger for injected conversion event 0 */
+#define ADC_ExternalConvEvent_1              ((uint16_t)0x0004)  /*!<  ADC external trigger for injected conversion event 1 */
+#define ADC_ExternalConvEvent_2              ((uint16_t)0x0008)  /*!<  ADC external trigger for injected conversion event 2 */
+#define ADC_ExternalConvEvent_3              ((uint16_t)0x000C)  /*!<  ADC external trigger for injected conversion event 3 */
+#define ADC_ExternalConvEvent_4              ((uint16_t)0x0010)  /*!<  ADC external trigger for injected conversion event 4 */
+#define ADC_ExternalConvEvent_5              ((uint16_t)0x0014)  /*!<  ADC external trigger for injected conversion event 5 */
+#define ADC_ExternalConvEvent_6              ((uint16_t)0x0018)  /*!<  ADC external trigger for injected conversion event 6 */
+#define ADC_ExternalConvEvent_7              ((uint16_t)0x001C)  /*!<  ADC external trigger for injected conversion event 7 */
+#define ADC_ExternalConvEvent_8              ((uint16_t)0x0020)  /*!<  ADC external trigger for injected conversion event 8 */
+#define ADC_ExternalConvEvent_9              ((uint16_t)0x0024)  /*!<  ADC external trigger for injected conversion event 9 */
+#define ADC_ExternalConvEvent_10             ((uint16_t)0x0028)  /*!<  ADC external trigger for injected conversion event 10 */
+#define ADC_ExternalConvEvent_11             ((uint16_t)0x002C)  /*!<  ADC external trigger for injected conversion event 11 */
+#define ADC_ExternalConvEvent_12             ((uint16_t)0x0030)  /*!<  ADC external trigger for injected conversion event 12 */
+#define ADC_ExternalConvEvent_13             ((uint16_t)0x0034)  /*!<  ADC external trigger for injected conversion event 13 */
+#define ADC_ExternalConvEvent_14             ((uint16_t)0x0038)  /*!<  ADC external trigger for injected conversion event 14 */
+#define ADC_ExternalConvEvent_15             ((uint16_t)0x003C)  /*!<  ADC external trigger for injected conversion event 15 */
 
-#define IS_ADC_EXT_INJEC_TRIG(INJTRIG) (((INJTRIG) == ADC_ExternalTrigInjecConvEvent_0) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_1) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_2) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_3) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_4) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_5) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_6) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_7) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_8) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_9) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_10) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_11) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_12) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_13) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_14) || \
-                                        ((INJTRIG) == ADC_ExternalTrigInjecConvEvent_15))
+#define IS_ADC_EXT_INJEC_TRIG(INJTRIG) (((INJTRIG) == ADC_ExternalConvEvent_0) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_1) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_2) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_3) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_4) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_5) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_6) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_7) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_8) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_9) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_10) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_11) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_12) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_13) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_14) || \
+                                        ((INJTRIG) == ADC_ExternalConvEvent_15))
 /**
   * @}
   */

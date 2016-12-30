@@ -25,11 +25,12 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-void PVD_Configuration(void);
-void SysTickTimerInit(void);
-void PluseOutputInit(void);
-void Data_init(void);
-
+static void PVD_Configuration(void);
+static void SysTickTimerInit(void);
+static void PluseOutputInit(void);
+static void Data_init(void);
+static void RCC_Configuration(void);
+static void NVIC_Configuration(void);
 
 
 /*******************************************************************************
@@ -63,13 +64,17 @@ void Initial_Device(void)
         
         /* EWDT init */
         EWDT_Drv_pin_config();
-//        ExtWdtCheck();        
+/*        ExtWdtCheck();*/
         
         /** input and relay output init **/
         Input_Output_PinInit();                
         
+        /* SW DP SWITCH */
+        SW_DP_Init();
+        
         /** Data array is initialized to 0 **/
         Data_init();
+        
         
 #ifdef GEC_DBL2_SLAVE           
             
@@ -84,7 +89,7 @@ void Initial_Device(void)
         
 #else
         /* wait for CPU2 */
-        delay_ms(500);
+        delay_ms(500u);
       
 #endif  
 
@@ -99,7 +104,7 @@ void Initial_Device(void)
         CrossCommCPUCheck();
            
         /* HardwareTest */
-//        HardwareTEST();        
+        /*HardwareTEST();*/
 
 
         /** pluse output init **/
@@ -124,7 +129,7 @@ void Initial_Device(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void PluseOutputInit(void)
+static void PluseOutputInit(void)
 {
     
     SFSW_C_1_SET();
@@ -144,14 +149,15 @@ void PluseOutputInit(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void SysTickTimerInit(void)
+static void SysTickTimerInit(void)
 {
   
     /** interrupt time 5ms **/
-    if(SysTick_Config(SystemCoreClock / ( 1000 / SYSTEMTICK )))
+    if(SysTick_Config(SystemCoreClock / ( 1000u / SYSTEMTICK )))
     {
         /* Capture error */
-        while (1);
+        while (1u)
+        {}
     }
 
 }
@@ -163,7 +169,7 @@ void SysTickTimerInit(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void RCC_Configuration(void)
+static void RCC_Configuration(void)
 {
 
     /* HCLK = SYSCLK */
@@ -199,7 +205,7 @@ void RCC_Configuration(void)
     RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
 
     /* Wait till PLL is used as system clock source */
-    while(RCC_GetSYSCLKSource() != 0x08)
+    while(RCC_GetSYSCLKSource() != 0x08u)
     {
     }
 
@@ -263,15 +269,13 @@ void RCC_Configuration(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void NVIC_Configuration(void)
+static void NVIC_Configuration(void)
 {
   
-    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0);
+    NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0u);
     
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);	
     
-//    INTX_ENABLE();
-
 }
 
 /*******************************************************************************
@@ -283,7 +287,7 @@ void NVIC_Configuration(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void PVD_Configuration(void)
+static void PVD_Configuration(void)
 {
   
     EXTI_InitTypeDef EXTI_InitStructure;
@@ -292,14 +296,14 @@ void PVD_Configuration(void)
 
     EXTI_InitStructure.EXTI_Line = EXTI_Line16;
     EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;//EXTI_Trigger_Falling;//EXTI_Trigger_Rising_Falling;
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
     EXTI_InitStructure.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStructure);
 
     /* Enable the PVD Interrupt */
-    NVIC_InitStructure.NVIC_IRQChannel = PVD_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannel = (u8)PVD_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0u;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0u;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
     
@@ -322,7 +326,7 @@ void PVD_Configuration(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void Data_init(void)
+static void Data_init(void)
 {
 
     

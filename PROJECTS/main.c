@@ -20,14 +20,16 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static u16 Tms10Counter = 0,Tms20Counter = 0,Tms50Counter = 0,Tms100Counter = 0,Tms500Counter = 0,Tms1000Counter = 0;
+static u16 Tms10Counter = 0u,Tms20Counter = 0u,Tms50Counter = 0u,Tms100Counter = 0u,Tms500Counter = 0u,Tms1000Counter = 0u;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+static void LED_indicator(u16 freq);
+static void Task_Loop(void);
 
-u32 TimingDelay = 0;
-u32 SysRunTime = 0; 
-u8 testmode = 0;
+u32 TimingDelay = 0u;
+u32 SysRunTime = 0u; 
+u16 g_u8LedFreq = FREQ_0_5HZ;
 
 /* ESC */
 DBL2EscData EscData;
@@ -45,17 +47,17 @@ u8 EscDataFromSafety[2][8];
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void LED_indicator(void)
+static void LED_indicator(u16 freq)
 {
-	static u32 led_idr_cnt = 0;	 
-	
-	led_idr_cnt++;
-	 
-	if(led_idr_cnt >= 100)   
-	{
-            led_idr_cnt = 0;
-            LED_FLASH();  
-	}   
+    static u32 led_idr_cnt = 0u;	 
+    
+    led_idr_cnt++;
+    
+    if(led_idr_cnt >= freq)   
+    {
+        led_idr_cnt = 0u;
+        LED_FLASH();       
+    }   
 }
 
 
@@ -66,15 +68,15 @@ void LED_indicator(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void Task_Loop(void)
+static void Task_Loop(void)
 {          
 
-      if( ++Tms10Counter >= 2 ) Tms10Counter = 0;
-      if( ++Tms20Counter >= 4 ) Tms20Counter = 0;
-      if( ++Tms50Counter >= 9 ) Tms50Counter = 0;
-      if( ++Tms100Counter >= 19 ) Tms100Counter = 0;
-      if( ++Tms500Counter >= 99 ) Tms500Counter = 0;
-      if( ++Tms1000Counter >= 200 ) Tms1000Counter = 0;      
+    if( ++Tms10Counter >= 2u ){ Tms10Counter = 0u;}
+    if( ++Tms20Counter >= 4u ){ Tms20Counter = 0u;}
+    if( ++Tms50Counter >= 9u ){ Tms50Counter = 0u;}
+    if( ++Tms100Counter >= 19u ){ Tms100Counter = 0u;}
+    if( ++Tms500Counter >= 99u ){ Tms500Counter = 0u;}
+    if( ++Tms1000Counter >= 200u ){ Tms1000Counter = 0u;}      
 
 #if SELF_TEST      
       /* self check */
@@ -83,13 +85,12 @@ void Task_Loop(void)
 #endif  
       
       Safety_Receive_Data_Process();
-      
-#ifdef GEC_DBL2_MASTER  
-      if( testmode == 1 )
+        
+      if( testmode == 1u )
       {
           EscData.SwdpAdr = ReadSwDp();
       }
-#endif
+
       
       Get_GpioInput(&EscData.DBL2InputData[0]);
 #ifdef GEC_DBL2_SLAVE      
@@ -100,57 +101,50 @@ void Task_Loop(void)
 
       
       /*  ESC  */
-      if( testmode == 0 )
+      if( testmode == 0u )
       {
           DBL2GetAdr();
       }
 
       
-#ifdef GEC_DBL2_MASTER 
-      if( Tms10Counter == 0 )
+
+      if( Tms10Counter == 0u )
       {
+#ifdef GEC_DBL2_MASTER           
           Communication_CPU();
           Safety_Send_Data_Process(0u); 
+#endif          
       }      
-      if( Tms20Counter == 0 )
+      if( Tms20Counter == 0u )
       {                
 
       }  
-#else
-      if( Tms10Counter == 0 )
-      {
-                   
-      }
-      if( Tms20Counter == 0 )
-      {
-           
-      }       
-#endif     
+    
       
-      if( Tms50Counter == 0 )
+      if( Tms50Counter == 0u )
       {                                 
           /* Reload EWDT counter */          
           EWDT_TOOGLE();
           
       } 
       
-      if( Tms100Counter == 0 )
+      if( Tms100Counter == 0u )
       {   
 #ifdef GEC_DBL2_SLAVE         
-          EscData.DBL2AnalogData[0] = Get_Adc_Average(1);
-          EscData.DBL2AnalogData[1] = Get_Adc_Average(2);
+          EscData.DBL2AnalogData[0] = (u8)Get_Adc_Average(1u);
+          EscData.DBL2AnalogData[1] = (u8)Get_Adc_Average(2u);
           EscData.DBL2AnalogData[2] = Get_RTD_Value();
 #endif
       }
            
-      if( Tms500Counter == 0 )
+      if( Tms500Counter == 0u )
       {    
 #ifdef GEC_DBL2_SLAVE
           Input_Check();         
 #endif
       }
       
-      if( Tms1000Counter == 0 )
+      if( Tms1000Counter == 0u )
       { 
 
       }
@@ -172,7 +166,10 @@ int main(void)
     u16 i; 
     
     /* Power up delay */
-    for( i = 0; i < 10000; i++ );
+    for( i = 0u; i < 10000u; i++ )
+    {
+    
+    }
     
     /** hardware init **/
     Initial_Device();    
@@ -181,11 +178,13 @@ int main(void)
     {
       
         /* 5ms */
-        while ( !TimingDelay );
-        TimingDelay = 0;
+        while ( !TimingDelay )
+        {
+        }
+        TimingDelay = 0u;
 
         Task_Loop();
-        LED_indicator();
+        LED_indicator(g_u8LedFreq);
    
     }          
           

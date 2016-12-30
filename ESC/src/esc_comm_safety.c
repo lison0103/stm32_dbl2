@@ -32,10 +32,13 @@
 static void Can_Send_Data_Process(void);
 static void Can_Receive_Data_Process(void);
 static void Communication_Can_Filter(void);
+#ifdef GEC_DBL2_SLAVE
+static void Safety_Send_Data_Process(u8 respone);
+#endif
 
 u8 g_u8SafetyNewData = 0u;
-/* for test */
-u8 g_u8SafetyRequest = 0u;
+
+static u8 g_u8SafetyRequest = 0u;
 
 /*******************************************************************************
 * Function Name  : Communication_To_Safety
@@ -86,7 +89,11 @@ static void Communication_Can_Filter(void)
 * Output         : None
 * Return         : None 
 *******************************************************************************/
+#ifdef GEC_DBL2_SLAVE
+static void Safety_Send_Data_Process(u8 respone)
+#else
 void Safety_Send_Data_Process(u8 respone)
+#endif
 {	
     u32 crc;
     u16 len;
@@ -671,7 +678,7 @@ Byte	Bits (7 is MSB)	Data
         
         EscDataToSafety[3][0] = (u8)EscData.DBL2AnalogData[0];
         EscDataToSafety[3][1] |= (u8)((EscData.DBL2AnalogData[0] >> 8u) & 0x0fu);
-        EscDataToSafety[3][1] |= (u8)((EscData.DBL2AnalogData[1] << 4u) & 0xf0u);
+        EscDataToSafety[3][1] |= (u8)(((u8)EscData.DBL2AnalogData[1] << 4u) & 0xf0u);
         EscDataToSafety[3][2] = (u8)((EscData.DBL2AnalogData[1] >> 4u) & 0xffu);  
         /*
         EscDataToSafety[3][3] = (u8)EscData.DBL2AnalogData[2];
@@ -902,12 +909,20 @@ void Communication_To_Safety(void)
     }
     else if( stat_u16Can1HandshakeSuccess )
     {
-        if( ++can1_comm_timeout * SYSTEMTICK >= 100u )
+        if( can1_comm_timeout < 0xffu )
+        {
+            can1_comm_timeout++;
+        }
+        if( can1_comm_timeout * SYSTEMTICK >= 100u )
         {
             /*  can communication timeout process */
             EscData.SafetyReset = 0u;
             EscData.SEQN = 0u;
             EscData.DBL2OutputData = 0u;
+            if( CAN1->ESR & CAN_ESR_BOFF )
+            {
+                CAN_Int_Init(CAN1);
+            }             
         }
     }
     else
@@ -918,11 +933,17 @@ void Communication_To_Safety(void)
         
         Communication_Can_Filter();
         
-        stat_u16TimerCan1CommWait++;
+        if( stat_u16TimerCan1CommWait < 0xffffu )
+        {
+            stat_u16TimerCan1CommWait++;
+        }
         if( stat_u16TimerCan1CommWait * SYSTEMTICK > CAN_COMM_HAND_TIME )
         {
             /*  can communication handshake timeout when power on */
-
+            if( CAN1->ESR & CAN_ESR_BOFF )
+            {
+                CAN_Int_Init(CAN1);
+            }   
         }            
     }  
     

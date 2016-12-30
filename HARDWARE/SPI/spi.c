@@ -22,13 +22,16 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-void SPIx_DMA_Configuration( void );
+static void SPIx_DMA_Configuration( void );
+#ifdef GEC_DBL2_MASTER
+static void SPIx_Configuration(SPI_TypeDef* SPIx);
+#endif
 
-u8 SPIx_TX_Buff[buffersize] = { 0 };
-u8 SPIx_RX_Buff[buffersize] = { 0 };
+static u8 SPIx_TX_Buff[buffersize] = { 0 };
+static u8 SPIx_RX_Buff[buffersize] = { 0 };
 u8 SPIx_TX_Data[buffersize] = { 0 };
 u8 SPIx_RX_Data[buffersize] = { 0 };
-DMA_InitTypeDef     DMA_InitStructure;
+
 static u16 waitus = 0u;
 
 
@@ -42,7 +45,11 @@ static u16 waitus = 0u;
 * Output         : None
 * Return         : None
 *******************************************************************************/
+#ifdef GEC_DBL2_MASTER
+static void SPIx_Configuration(SPI_TypeDef* SPIx)
+#else
 void SPIx_Configuration(SPI_TypeDef* SPIx)
+#endif
 {       
         SPI_InitTypeDef  SPI_InitStructure;	
         
@@ -65,7 +72,7 @@ void SPIx_Configuration(SPI_TypeDef* SPIx)
 	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;	                        
         /* NSS signal by hardware (NSS pin) or software (using SSI bit) management: internal NSS-bit control signal has SSI */
 	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;		                
-        /* Defines the baud rate prescaler values: Baud Rate Prescaler is 32, speed is about 72M / 32 = 2.25M / s */
+        /* Defines the baud rate prescaler values: Baud Rate Prescaler is 16, speed is about 72M / 16 = 4.5M / s */
 	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_16;	
         /* Specifies the data transmission from the MSB or LSB bit first: data transmission start from the MSB */
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
@@ -148,10 +155,9 @@ void SPIx_Init(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-
-void SPIx_DMA_Configuration( void )
+static void SPIx_DMA_Configuration( void )
 {  
-      
+      DMA_InitTypeDef     DMA_InitStructure;
 #ifdef GEC_DBL2_MASTER
     
       DMA_DeInit(DMA1_Channel4);
@@ -244,14 +250,14 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
 
 #ifdef GEC_DBL2_MASTER
     
-    waitus = 0;
-    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    waitus = 0u;
+    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000u ) )
     {
         waitus++;
-        delay_us(1);
+        delay_us(1u);
     }
     
-    if( waitus >= 2000 )
+    if( waitus >= 2000u )
     {
         /* TXE timeout! */
     }
@@ -259,9 +265,9 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
     DMA_Cmd(DMA1_Channel4, DISABLE);
     DMA_Cmd(DMA1_Channel5, DISABLE);      
     
-    DMA1_Channel4->CNDTR = 0x0000;	
+    DMA1_Channel4->CNDTR = 0x0000u;	
     DMA1_Channel4->CNDTR = num;
-    DMA1_Channel5->CNDTR = 0x0000;	
+    DMA1_Channel5->CNDTR = 0x0000u;	
     DMA1_Channel5->CNDTR = num;      
     
     
@@ -272,14 +278,14 @@ void SPIx_DMA_ReceiveSendByte( u16 num )
     SPI2->DR ;						
       
 
-    waitus = 0;
-    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000 ) )
+    waitus = 0u;
+    while( ( SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_TXE) == RESET ) && ( waitus < 2000u ) )
     {
         waitus++;
-        delay_us(1);
+        delay_us(1u);
     }
     
-    if( waitus >= 2000 )
+    if( waitus >= 2000u )
     {
         /* TXE timeout! */
     }

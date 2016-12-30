@@ -20,11 +20,10 @@
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-//#include "stm32f10x_lib.h"
 #include "stm32f10x_STLlib.h"
 #include "ewdt.h"
 
-#define ALLOC_GLOBALS
+/*#define ALLOC_GLOBALS*/
 #include "stm32f10x_STLclassBvar.h"
 
 #ifdef STL_VERBOSE_POR
@@ -35,15 +34,113 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+static u32 g_u32InitTestTemp = 0u;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 #ifdef STL_VERBOSE_POR
   static void STL_VerbosePORInit(void);
-//  static void USART_Configuration(void);
 #endif  /* STL_VERBOSE_POR */
 
 static ErrorStatus RCC_Config64MHzOnHSI(void);
 static ErrorStatus RCC_SwitchOffPLL(void);
+static void ExtWdtCheck(void);
+static void GeneralRegister_StartupCheck(void);
+static void IWDTCheck(void);
+static void DataIntegrityInFlash_StartupCheck(void);
+static void ClockFrequency_StartupCheck(void);
+static void Stack_StartupCheck(void);
+
+#ifdef __IAR_SYSTEMS_ICC__  /* IAR Compiler */
+
+  /* Temporary RAM buffer used during transparent run-time tests */
+  /* WARNING: Real reserved RAM location from 0x20000000 to 0x20000024*/
+    #pragma location = "RUN_TIME_RAM_BUF"
+    u32 RunTimeRamBuf[RT_RAM_BLOCKSIZE] ;
+
+  /* RAM pointer for run-time tests */
+    #pragma location = "RUN_TIME_RAM_PNT"
+    u32 *p_RunTimeRamChk  ;
+    #pragma location = "RUN_TIME_RAM_PNT"
+    u32 *p_RunTimeRamChkInv ;
+
+  /* Counter for verifying correct program execution at start */
+    #pragma location = "CLASS_B_RAM"
+    u32 CtrlFlowCnt;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 CtrlFlowCntInv;
+
+  /* Counter for verifying correct program execution in interrupt */
+    #pragma location = "CLASS_B_RAM"
+    u32 ISRCtrlFlowCnt ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 ISRCtrlFlowCntInv ;
+
+  /* First measure stored as reference for run-time checks */
+    #pragma location = "CLASS_B_RAM"
+    u32 StartUpClockFreq ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 StartUpClockFreqInv ;
+
+  /* First period measure stored as reference for run-time checks */
+    #pragma location = "CLASS_B_RAM"
+    u32 RefHSEPeriod ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 RefHSEPeriodInv ;
+
+  /* Last period measure stored as reference for run-time checks */
+    #pragma location = "CLASS_B_RAM"
+    u32 CurrentHSEPeriod ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 CurrentHSEPeriodInv;
+
+  /* Sofware time base used in main program (incremented in SysTick timer ISR */
+    #pragma location = "CLASS_B_RAM"
+    u32 TickCounter ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 TickCounterInv ;
+
+  /* Indicates to the main routine a 100ms tick */
+    #pragma location = "CLASS_B_RAM"
+    vu32 TimeBaseFlag ;
+    #pragma location = "CLASS_B_RAM_REV"
+    vu32 TimeBaseFlagInv  ;
+
+  /* Stores the Control flow counter from one main loop to the other */
+    #pragma location = "CLASS_B_RAM"
+    u32 LastCtrlFlowCnt ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 LastCtrlFlowCntInv ;
+
+  /* Pointer to FLASH for crc16 run-time tests */
+    #pragma location = "CLASS_B_RAM"
+    u8 *p_RunCrc16Chk ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u8 *p_RunCrc16ChkInv ;
+
+  /* Pointer to FLASH for crc32 run-time tests */
+    #pragma location = "CLASS_B_RAM"
+    u32 *p_RunCrc32Chk ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 *p_RunCrc32ChkInv  ;
+
+  /* Reference 32-bit CRC for run-time tests */
+    #pragma location = "CLASS_B_RAM"
+    u32 RefCrc32  ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u32 RefCrc32Inv;
+
+  /* Current FLASH 16-bit Crc */
+    #pragma location = "CLASS_B_RAM"
+    u16 CurrentCrc16 ;
+    #pragma location = "CLASS_B_RAM_REV"
+    u16 CurrentCrc16Inv ;
+
+  /* Magic pattern for Stack overflow in this array */
+    #pragma location = "STACK_BOTTOM"
+    vu32 StackOverFlowPtrn[4];
+
+#endif  /* __IAR_SYSTEMS_ICC__ */
 
 
 /*******************************************************************************
@@ -56,14 +153,39 @@ static ErrorStatus RCC_SwitchOffPLL(void);
 *******************************************************************************/
 void FailSafePOR(void)
 {
-//  SysTick_ITConfig(DISABLE);
+/*  SysTick_ITConfig(DISABLE);*/
   #ifdef STL_VERBOSE_POR
   printf(" >>>>>>>>>> POR FailSafe Mode <<<<<<<<<<\n\r");
   #endif  /* STL_VERBOSE_POR */
+/*  
   while(1)
   {
     NVIC_SystemReset();
   }
+*/
+     /* Reocrd the init test error */
+  /* Set 2 flag, because the test has bkp reset and ram reset */
+#ifdef GEC_DBL2_SLAVE
+          write_bkp(RTC_BKP_DR3, 1u);  
+#else
+          write_bkp(BKP_DR3, 1u);
+#endif  
+    g_u32InitTestTemp = 1u;      
+}
+
+/*******************************************************************************
+* Function Name  : ExtWdtCheck
+* Description    : Check the external watchdong.
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+static void ExtWdtCheck(void)
+{
+
+    EWDT_Drv_pin_config();
+    ExternalWatchdogCheck(); 
+
 }
 
 /*******************************************************************************
@@ -73,7 +195,7 @@ void FailSafePOR(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void GeneralRegister_StartupCheck(void)
+static void GeneralRegister_StartupCheck(void)
 {
     /* Initializes counter for control flow monitoring */
     CtrlFlowCnt = CPU_TEST_CALLER;
@@ -104,12 +226,12 @@ void GeneralRegister_StartupCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void IWDTCheck(void)
+static void IWDTCheck(void)
 {
-    CtrlFlowCnt += WDG_TEST_CALLER;
+    CtrlFlowCnt += IWDG_TEST_CALLER;
     STL_WDGSelfTest();
     EWDT_TOOGLE();
-    CtrlFlowCntInv -= WDG_TEST_CALLER;
+    CtrlFlowCntInv -= IWDG_TEST_CALLER;
 
 }
 
@@ -120,7 +242,7 @@ void IWDTCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void DataIntegrityInFlash_StartupCheck(void)
+static void DataIntegrityInFlash_StartupCheck(void)
 {
     CtrlFlowCnt += CRC32_TEST_CALLER;
     {
@@ -140,7 +262,7 @@ void DataIntegrityInFlash_StartupCheck(void)
     
     /* Regular 16-bit crc computation */
     CtrlFlowCnt += CRC16_TEST_CALLER;
-    if(STL_crc16(CRC_INIT,(u8 *)ROM_START, ROM_SIZE) != REF_CRC16)
+    if(STL_crc16((u16)CRC_INIT,(u8 *)ROM_START, ROM_SIZE) != REF_CRC16)
     {
 #ifdef STL_VERBOSE_POR
         printf(" FLASH 16-bit CRC Error at Start-up\n\r");
@@ -169,7 +291,7 @@ void DataIntegrityInFlash_StartupCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ClockFrequency_StartupCheck(void)
+static void ClockFrequency_StartupCheck(void)
 {
     CtrlFlowCnt += CLOCK_TEST_CALLER;
     switch ( STL_ClockStartUpTest() )
@@ -218,7 +340,7 @@ void ClockFrequency_StartupCheck(void)
         FailSafePOR();
         break;
     }
-    // Either switch back to HSI or start PLL on HSE asap
+    /* Either switch back to HSI or start PLL on HSE asap */
     CtrlFlowCntInv -= CLOCK_TEST_CALLER;
     
     /* Reload IWDG / EWDT counter */
@@ -234,7 +356,7 @@ void ClockFrequency_StartupCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void Stack_StartupCheck(void)
+static void Stack_StartupCheck(void)
 {
     CtrlFlowCnt += STACK_OVERFLOW_TEST;
     StackOverFlowPtrn[0] = 0xAAAAAAAAuL;
@@ -243,7 +365,6 @@ void Stack_StartupCheck(void)
     StackOverFlowPtrn[3] = 0xDDDDDDDDuL;
     CtrlFlowCntInv -= STACK_OVERFLOW_TEST;
 }
-
 
 
 /*******************************************************************************
@@ -265,11 +386,13 @@ void Safety_StartupCheck1(void)
     printf("\n\n\r *******  Self Test Library Init  *******\n\r");
   #endif
    
+   /* Clear the init test error flag */ 
+   g_u32InitTestTemp = 0u;
+   
   /*--------------------------------------------------------------------------*/ 
   /*--------------------------- EWDT check -----------------------------------*/  
   /*--------------------------------------------------------------------------*/ 
-  EWDT_Drv_pin_config();
-//  ExtWdtCheck();
+  ExtWdtCheck();
   
   /*--------------------------------------------------------------------------*/
   /*------------------- CPU registers and Flags Self Test --------------------*/
@@ -398,7 +521,12 @@ void Safety_StartupCheck1(void)
   /*--------------------------------------------------------------------------*/
   /*----------------------- Clock Frequency Self Test ------------------------*/
   /*--------------------------------------------------------------------------*/
-  
+
+#ifdef GEC_DBL2_SLAVE
+      g_u32InitTestTemp = RTC_ReadBackupRegister(RTC_BKP_DR3);
+#else
+      g_u32InitTestTemp = BKP_ReadBackupRegister(BKP_DR3);
+#endif
   ClockFrequency_StartupCheck();
   
   /*--------------------------------------------------------------------------*/
@@ -421,6 +549,11 @@ void Safety_StartupCheck1(void)
    #ifdef STL_VERBOSE_POR
     printf("Control Flow Checkpoint 2 OK \n\r");
    #endif  /* STL_VERBOSE_POR */
+   
+   if( g_u32InitTestTemp )
+   {
+      FailSafePOR();
+   }
    
   /* Reload IWDG / EWDT counter */
   IWDG_ReloadCounter();
@@ -471,42 +604,42 @@ void STL_VerbosePORInit(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-//void USART_Configuration(void)
-//{
-//  USART_InitTypeDef USART_InitStructure;
-//
-//  USART_DeInit(USART1);
-//
-///* USART1 configuration ------------------------------------------------------*/
-//  /* USART1 configured as follow:
-//        - BaudRate = 115200 baud
-//        - Word Length = 8 Bits
-//        - One Stop Bit
-//        - No parity
-//        - Hardware flow control disabled (RTS and CTS signals)
-//        - Receive and transmit enabled
-//        - USART Clock disabled
-//        - USART CPOL: Clock is active low
-//        - USART CPHA: Data is captured on the middle
-//        - USART LastBit: The clock pulse of the last data bit is not output to
-//                         the SCLK pin
-//  */
-//  USART_InitStructure.USART_BaudRate = 115200uL;
-//  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-//  USART_InitStructure.USART_StopBits = USART_StopBits_1;
-//  USART_InitStructure.USART_Parity = USART_Parity_No;
-//  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-//  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-//  USART_InitStructure.USART_Clock = USART_Clock_Disable;
-//  USART_InitStructure.USART_CPOL = USART_CPOL_Low;
-//  USART_InitStructure.USART_CPHA = USART_CPHA_2Edge;
-//  USART_InitStructure.USART_LastBit = USART_LastBit_Disable;
-//
-//  USART_Init(USART1, &USART_InitStructure);
-//
-//  /* Enable USART1 */
-//  USART_Cmd(USART1, ENABLE);
-//}
+void USART_Configuration(void)
+{
+  USART_InitTypeDef USART_InitStructure;
+
+  USART_DeInit(USART1);
+
+/* USART1 configuration ------------------------------------------------------*/
+  /* USART1 configured as follow:
+        - BaudRate = 115200 baud
+        - Word Length = 8 Bits
+        - One Stop Bit
+        - No parity
+        - Hardware flow control disabled (RTS and CTS signals)
+        - Receive and transmit enabled
+        - USART Clock disabled
+        - USART CPOL: Clock is active low
+        - USART CPHA: Data is captured on the middle
+        - USART LastBit: The clock pulse of the last data bit is not output to
+                         the SCLK pin
+  */
+  USART_InitStructure.USART_BaudRate = 115200uL;
+  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+  USART_InitStructure.USART_StopBits = USART_StopBits_1;
+  USART_InitStructure.USART_Parity = USART_Parity_No;
+  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+  USART_InitStructure.USART_Clock = USART_Clock_Disable;
+  USART_InitStructure.USART_CPOL = USART_CPOL_Low;
+  USART_InitStructure.USART_CPHA = USART_CPHA_2Edge;
+  USART_InitStructure.USART_LastBit = USART_LastBit_Disable;
+
+  USART_Init(USART1, &USART_InitStructure);
+
+  /* Enable USART1 */
+  USART_Cmd(USART1, ENABLE);
+}
 
 #endif  /* STL_VERBOSE_POR */
 
@@ -518,7 +651,7 @@ void STL_VerbosePORInit(void)
 * Output         : None
 * Return         : ErrorStatus = {ERROR; SUCCESS}
 *******************************************************************************/
-ErrorStatus RCC_Config64MHzOnHSI(void)
+static ErrorStatus RCC_Config64MHzOnHSI(void)
 {
     ErrorStatus Result = ERROR;
     u32 TimeOut = PLL_LOCK_TIMEOUT;
@@ -540,7 +673,7 @@ ErrorStatus RCC_Config64MHzOnHSI(void)
 #endif
 
   /* PLLCLK = 4MHz * 16 = 64 MHz */
-//  RCC_PLLConfig(RCC_PLLSource_HSI_Div2, RCC_PLLMul_16);
+/*  RCC_PLLConfig(RCC_PLLSource_HSI_Div2, RCC_PLLMul_16);*/
   /* Enable PLL */
   RCC_PLLCmd(ENABLE);
 
@@ -549,9 +682,9 @@ ErrorStatus RCC_Config64MHzOnHSI(void)
   {
     TimeOut--;
   }
-  while((RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET) && (TimeOut != 0));
+  while((RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET) && (TimeOut != 0u));
 
-  if (TimeOut == 0)
+  if (TimeOut == 0u)
   {
     Result = ERROR;     /* Clock switch failure */
   }
@@ -568,9 +701,9 @@ ErrorStatus RCC_Config64MHzOnHSI(void)
     {
       TimeOut--;
     }
-    while((RCC_GetSYSCLKSource() != 0x08) && (TimeOut != 0));
+    while((RCC_GetSYSCLKSource() != 0x08u) && (TimeOut != 0u));
 
-    if (TimeOut == 0)
+    if (TimeOut == 0u)
     {
       Result = ERROR;     /* Clock switch failure */
     }
@@ -592,7 +725,7 @@ ErrorStatus RCC_Config64MHzOnHSI(void)
 * Output         : None
 * Return         : ErrorStatus = {ERROR; SUCCESS}
 *******************************************************************************/
-ErrorStatus RCC_SwitchOffPLL(void)
+static ErrorStatus RCC_SwitchOffPLL(void)
 {
     ErrorStatus Result = ERROR;
     u32 TimeOut = CLOCK_SWITCH_TIMEOUT;
@@ -606,9 +739,9 @@ ErrorStatus RCC_SwitchOffPLL(void)
   {
     TimeOut--;
   }
-  while ((RCC_GetSYSCLKSource() != 0x00) && (TimeOut != 0));
+  while ((RCC_GetSYSCLKSource() != 0x00u) && (TimeOut != 0u));
 
-  if (TimeOut == 0)
+  if (TimeOut == 0u)
   {
     Result = ERROR;     /* Clock switch failure */
   }
@@ -632,8 +765,10 @@ ErrorStatus RCC_SwitchOffPLL(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void STL_WDGSelfTest(void)
+static void STL_WDGSelfTest(void)
 {
+    u8 GetResetFlag = 0u;
+    
   #ifdef STL_VERBOSE_POR
     if (RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET) printf("Pin reset \r\n");
     if (RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET) printf("POR reset \r\n");
@@ -644,39 +779,72 @@ void STL_WDGSelfTest(void)
   #endif /* STL_VERBOSE_POR */
 
   /* In one of the 4 conditions below, start watchdogs test */
-  if ((RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET)   /* Power on reset */
-   || (RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)   /* or Software reset */
-   || (RCC_GetFlagStatus(RCC_FLAG_LPWRRST) == SET)  /* or Low Power reset */
-   || ((RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET)  /* or triggered by */
-    && (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == RESET)  /* external pin solely */
-    ))
+  if (RCC_GetFlagStatus(RCC_FLAG_PORRST) == SET)   /* Power on reset */
   {
-    #ifdef STL_VERBOSE_POR
-      printf("... Power-on or software reset, testing IWDG ... \r\n");
-    #endif  /* STL_VERBOSE_POR */
+      GetResetFlag = 1u;
+  }
+  else if(RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)   /* or Software reset */
+  {
+      GetResetFlag = 1u;
+  }
+  else if(RCC_GetFlagStatus(RCC_FLAG_LPWRRST) == SET)  /* or Low Power reset */
+  {
+      GetResetFlag = 1u;
+  }
+  else if (RCC_GetFlagStatus(RCC_FLAG_PINRST) == SET)  /* or triggered by */
+  {     
+      GetResetFlag = 1u;
+  }     
+  else
+  {
+      GetResetFlag = 0u;
+  }
 
-    /* Enable write access to IWDG_PR and IWDG_RLR registers */
-    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-    /* IWDG clock: 40KHz(LSI) / 4 = 10KHz  */
-    IWDG_SetPrescaler(IWDG_Prescaler_4);
-    /* Set counter reload value to 1 (125¦Ìs */
-    IWDG_SetReload(1);
-    /* Reload IWDG counter */
-    IWDG_ReloadCounter();
-    /* Enable IWDG (LSI automatically enabled by HW) */
-    IWDG_Enable();
-
-    RCC_ClearFlag();        /* Clear all flags before reuming test */
-    /* Wait for an independant watchdog reset */
-    /* set the flag,don't check the ewdt */
-    iwdg_check_flag = 1;
-    while(1);
+  if( GetResetFlag == 1u )
+  {
+      if(RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == RESET)  /* external pin solely */
+      {
+#ifdef STL_VERBOSE_POR
+          printf("... Power-on or software reset, testing IWDG ... \r\n");
+#endif  /* STL_VERBOSE_POR */
+          
+          /* Enable write access to IWDG_PR and IWDG_RLR registers */
+          IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+          /* IWDG clock: 40KHz(LSI) / 4 = 10KHz  */
+          IWDG_SetPrescaler(IWDG_Prescaler_4);
+          /* Set counter reload value to 1 (125¦Ìs */
+          IWDG_SetReload(1u);
+          /* Reload IWDG counter */
+          IWDG_ReloadCounter();
+          /* Enable IWDG (LSI automatically enabled by HW) */
+          IWDG_Enable();
+          
+          RCC_ClearFlag();        /* Clear all flags before reuming test */
+          /* Wait for an independant watchdog reset */
+          /* set the flag,don't check the ewdt */
+#ifdef GEC_DBL2_SLAVE
+          write_bkp(RTC_BKP_DR2, 1u);  
+#else
+          write_bkp(BKP_DR2, 1u);
+#endif 
+          while(1)
+          {}
+      }
   }
   else  /* Watchdog test or software reset triggered by application failure */
   {
     /* If WWDG only was set, re-start the complete test (indicates a reset triggered by safety routines */
-    if ((RCC_GetFlagStatus(RCC_FLAG_PINRST)  == SET)
-     && (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == RESET))
+      GetResetFlag = 0u;
+      if(RCC_GetFlagStatus(RCC_FLAG_PINRST)  == SET)
+      {
+          GetResetFlag++;
+      }
+      if(RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == RESET)
+      {
+          GetResetFlag++;
+      }
+      
+    if( GetResetFlag == 2u )
     {
       RCC_ClearFlag();
       #ifdef STL_VERBOSE_POR
@@ -686,8 +854,18 @@ void STL_WDGSelfTest(void)
     }
     else  /* If IWDG only was set, continue the test with WWDG test*/
     {
-      if ((RCC_GetFlagStatus(RCC_FLAG_PINRST)  == SET)
-       && (RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET))
+        
+      GetResetFlag = 0u;
+      if(RCC_GetFlagStatus(RCC_FLAG_PINRST)  == SET)
+      {
+          GetResetFlag++;
+      }
+      if(RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET)
+      {
+          GetResetFlag++;
+      }
+      
+      if( GetResetFlag == 2u )          
       { 
         
           /* Enable write access to IWDG_PR and IWDG_RLR registers */
@@ -695,15 +873,19 @@ void STL_WDGSelfTest(void)
           /* IWDG clock: 40KHz(LSI)  max:0xFFF / 4095    Tout = ((4*2^prer)*count) / 40*/
           IWDG_SetPrescaler(IWDG_Prescaler_64);
           /* Set counter reload value to 1250 ,  64 * 1250 / 40 = 2s */
-          IWDG_SetReload(1250);
+          IWDG_SetReload(1250u);
           /* Reload IWDG counter */
           IWDG_ReloadCounter();
           /* Enable IWDG (LSI automatically enabled by HW) */
           IWDG_Enable();        
         
         
-//          RCC_ClearFlag();
-          iwdg_check_flag = 0;
+/*          RCC_ClearFlag();*/
+#ifdef GEC_DBL2_SLAVE
+          write_bkp(RTC_BKP_DR2, 0u);  
+#else
+          write_bkp(BKP_DR2, 0u);
+#endif 
           #ifdef STL_VERBOSE_POR
             printf("... WWDG reset, WDG test completed ... \r\n");
           #endif  /* STL_VERBOSE_POR */
@@ -716,7 +898,8 @@ void STL_WDGSelfTest(void)
           #ifdef STL_VERBOSE_POR
             printf("...Unexpected Flag configuration, re-start WDG test... \r\n");
           #endif  /* STL_VERBOSE_POR */
-          NVIC_SystemReset();
+          /*NVIC_SystemReset();*/
+          FailSafePOR();
       } /* End of Unexpected Flag configuration */
 
     } /* End of partial WDG test (IWDG test done) */

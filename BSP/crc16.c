@@ -10,6 +10,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "crc16.h"
+#include "stm32f10x_STLcrc32.h"
+#include <string.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -17,7 +19,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-
+static void STM_CRC_Init(void);
 
 const unsigned char aucCRCHi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
@@ -79,19 +81,25 @@ const unsigned char aucCRCLo[] = {
 * Output         : None
 * Return         : Check result
 *******************************************************************************/
-uint16_t MB_CRC16( uint8_t *pucFrame, uint16_t usLen )
+uint16_t MB_CRC16( uint8_t pucFrame[], uint16_t usLen )
 {
-    uint8_t ucCRCHi = 0xFF;
-    uint8_t ucCRCLo = 0xFF;
-    uint16_t iIndex;
+    uint8_t ucCRCHi = 0xFFu;
+    uint8_t ucCRCLo = 0xFFu;
+    uint8_t iIndex;
+    uint16_t returnCRC;
+    uint16_t p = 0u;
 
     while( usLen-- )
     {
-        iIndex = ucCRCLo ^ *( pucFrame++ );
+        iIndex = (ucCRCLo ^ pucFrame[p] );
+        p++;
         ucCRCLo = ( uint8_t )( ucCRCHi ^ aucCRCHi[iIndex] );
         ucCRCHi = aucCRCLo[iIndex];
     }
-    return ( uint16_t )( ucCRCHi << 8 | ucCRCLo );
+    
+    returnCRC = (u16)ucCRCHi << 8u;
+    returnCRC |= (u16)ucCRCLo;
+    return returnCRC;
 }
 
 
@@ -130,5 +138,36 @@ u32 MB_CRC32(u8 pucFrame[], u16 usLen, u32 Polynomials)
     return (crc);
 }
 
+static void STM_CRC_Init(void)
+{
+    /* Enable CRC module clock */
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC ,ENABLE);
+    
+    /* Reset CRC generator */
+    CRC->CR = CRC_RESET;
+}
+
+/*******************************************************************************
+* Function Name  : MB_CRC32
+* Description    : Computes the 32-bit CRC
+*                  
+* Input          : pBuffer: The first address data to be checked
+*                  BufferLength:    The length of the data to be checked
+* Output         : None
+* Return         : Check result
+*******************************************************************************/
+u32 STM_CRC32(uint32_t pBuffer[], uint32_t BufferLength)
+{
+    uint32_t index = 0u;
+    
+    STM_CRC_Init();
+    
+    for(index = 0u; index < BufferLength; index++)
+    {
+        CRC->DR = pBuffer[index];
+    }
+  
+    return (CRC->DR);  
+}
 
 /******************************  END OF FILE  *********************************/

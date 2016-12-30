@@ -40,8 +40,8 @@
 #define S32_MIN    ((s32)2147483648uL)
 
 /* This is for having self-diagnostic messages reported on a PC via UART */
-//#define STL_VERBOSE_POR     /* During Power-on phase only*/
-//#define STL_VERBOSE         /* During main program execution */
+/* #define STL_VERBOSE_POR */    /* During Power-on phase only*/
+/* #define STL_VERBOSE */        /* During main program execution */
 
 /* These are the direct and inverted data (pattern) used during the RAM
 test, performed using March C- Algorithm */
@@ -63,7 +63,7 @@ prescaler and PLL setting (if enabled)*/
 
 /* This is to provide a time base longer than the SysTick for the main */
 /* For instance this is needed to refresh the LSI watchdog and window watchdog */
-#define SYSTICK_20ms_TB  ((u32)10uL) // 10*2ms
+#define SYSTICK_20ms_TB  ((u32)10uL) /* 10*2ms */
 
 /* Timeout required to avoid being stuck in while loops during clock circuitry
 initialization, in case of problem. Watchdog is also active, but these timeouts
@@ -84,10 +84,10 @@ allow to react more quickly */
 #define HSI_Freq    ((u32)8000000uL)
 
 /* HSE frequency above this limit considered as harmonics*/
-#define HSE_LimitHigh ((u32)(HSE_Value*5)/4) /* (HSEValue + 25%) */
+#define HSE_LimitHigh ((u32)(HSE_Value*5u)/4u) /* (HSEValue + 25%) */
 
 /* HSE frequency below this limit considered as sub-harmonics*/
-#define HSE_LimitLow ((u32)(HSE_Value*3)/4)  /* (HSEValue - 25%) */
+#define HSE_LimitLow ((u32)(HSE_Value*3u)/4u)  /* (HSEValue - 25%) */
 
 /* -------------------------------------------------------------------------- */
 /* ------------------ CONTROL FLOW TAGS and CHECKPOINTS --------------------- */
@@ -98,7 +98,7 @@ allow to react more quickly */
 
 #define CPU_TEST_CALLER         ((u32)2)
 #define CPU_TEST_CALLEE         ((u32)3) /* Do not modify: hard coded in assembly file */
-#define WDG_TEST_CALLER         ((u32)5)
+#define IWDG_TEST_CALLER         ((u32)5)
 #define CRC32_INIT_CALLEE       ((u32)7)
 #define CRC32_TEST_CALLER       ((u32)11)
 #define CRC32_TEST_CALLEE       ((u32)13)
@@ -120,7 +120,7 @@ allow to react more quickly */
 
 #define CHECKPOINT1 ((u32)CPU_TEST_CALLER + \
                           CPU_TEST_CALLEE + \
-                          WDG_TEST_CALLER + \
+                          IWDG_TEST_CALLER + \
                           CRC32_INIT_CALLEE + \
                           CRC32_TEST_CALLER + \
                           CRC32_TEST_CALLEE + \
@@ -145,26 +145,27 @@ allow to react more quickly */
                           CLOCK_TEST_CALLEE + \
                           CLOCKPERIOD_TEST_CALLEE + \
                           FLASH_TEST_CALLER + \
-                          CRC16_RUN_TEST_CALLEE + \
-                          CRC16_TEST_CALLEE)
+                          CRC32_RUN_TEST_CALLEE + \
+                          CRC32_TEST_CALLEE)
 #define LAST_DELTA_MAIN ((u32) DELTA_MAIN)
 #define FULL_FLASH_CHECKED ((u32)DELTA_MAIN * STEPS_NUMBER)
 
 /* This is for run-time tests with 32-bit CRC */
-//#define DELTA_MAIN  ((u32)CPU_TEST_CALLER + \
-//                          CPU_TEST_CALLEE + \
-//                          STACK_OVERFLOW_TEST + \
-//                          STACK_OVERFLOW_CALLEE + \
-//                          CLOCK_TEST_CALLER + \
-//                          CLOCK_TEST_CALLEE + \
-//                          CLOCKPERIOD_TEST_CALLEE + \
-//                          FLASH_TEST_CALLER + \
-//                          CRC32_RUN_TEST_CALLEE + \
-//                          CRC32_TEST_CALLEE)
-//#define LAST_DELTA_MAIN ((u32) DELTA_MAIN  - CRC32_TEST_CALLEE + CRC32_INIT_CALLEE)
-//
-//#define FULL_FLASH_CHECKED ((u32)(DELTA_MAIN * STEPS_NUMBER) + LAST_DELTA_MAIN)
+/*
+#define DELTA_MAIN  ((u32)CPU_TEST_CALLER + \
+                          CPU_TEST_CALLEE + \
+                          STACK_OVERFLOW_TEST + \
+                          STACK_OVERFLOW_CALLEE + \
+                          CLOCK_TEST_CALLER + \
+                          CLOCK_TEST_CALLEE + \
+                          CLOCKPERIOD_TEST_CALLEE + \
+                          FLASH_TEST_CALLER + \
+                          CRC32_RUN_TEST_CALLEE + \
+                          CRC32_TEST_CALLEE)
+#define LAST_DELTA_MAIN ((u32) DELTA_MAIN  - CRC32_TEST_CALLEE + CRC32_INIT_CALLEE)
 
+#define FULL_FLASH_CHECKED ((u32)(DELTA_MAIN * STEPS_NUMBER) + LAST_DELTA_MAIN)
+*/
 
 #define MEASPERIOD_ISR_CALLER   ((u32)2)
 #define MEASPERIOD_ISR_CALLEE   ((u32)3)
@@ -181,14 +182,15 @@ allow to react more quickly */
                            RAM_MARCHC_ISR_CALLEE)
 
 /* This is for March X tests */
-//#define DELTA_ISR  ((u32)  MEASPERIOD_ISR_CALLER + \
-//                           MEASPERIOD_ISR_CALLEE + \
-//                           RAM_MARCHX_ISR_CALLER + \
-//                           RAM_MARCHX_ISR_CALLEE)
-
-#define CLASS_B_ROWS ((u32)(CLASS_B_END - CLASS_B_START)/4)
+/*
+#define DELTA_ISR  ((u32)  MEASPERIOD_ISR_CALLER + \
+                           MEASPERIOD_ISR_CALLEE + \
+                           RAM_MARCHX_ISR_CALLER + \
+                           RAM_MARCHX_ISR_CALLEE)
+*/
+#define CLASS_B_ROWS ((u32)(CLASS_B_END - CLASS_B_START)/4u)
 /* +1 below is for buffer self-test*/
-#define RAM_TEST_COMPLETED ((u32)(DELTA_ISR * (CLASS_B_ROWS+1)))
+#define RAM_TEST_COMPLETED ((u32)(DELTA_ISR * (CLASS_B_ROWS+1u)))
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
@@ -214,23 +216,26 @@ allow to react more quickly */
   
 
   #define ROM_START (unsigned char *)&__ICFEDIT_region_ROM_start__ 
-  #define ROM_SIZE  (unsigned int)&__ICFEDIT_region_ROM_end__ - 2 -(unsigned int)&__ICFEDIT_region_ROM_start__ + 1 /* ROM_SIZE in byte */
-  #define ROM_SIZEinWORDS ((u32)&__ICFEDIT_region_ROM_end__ -2 -(u32)&__ICFEDIT_region_ROM_start__ +1)/4 /* ...in words */
+  #define ROM_SIZE  (unsigned int)&__ICFEDIT_region_ROM_end__ - 2u -(unsigned int)&__ICFEDIT_region_ROM_start__ + 1u /* ROM_SIZE in byte */
+  #define ROM_SIZEinWORDS ((u32)&__ICFEDIT_region_ROM_end__ -2u -(u32)&__ICFEDIT_region_ROM_start__ +1u)/4u /* ...in words */
   #define ROM_END   ((u8 *)(&__ICFEDIT_region_ROM_end__))
 
   #define STEPS_NUMBER        ((u32)1024uL)
-  #define FLASH_BLOCK         (u32)((ROM_SIZE+2) / STEPS_NUMBER)
+  #define FLASH_BLOCK         (u32)((ROM_SIZE+2u) / STEPS_NUMBER)
   #define FLASH_BLOCK_WORDS   ((u32)(ROM_SIZEinWORDS / STEPS_NUMBER))
 
   /* Constants necessary for RAM test (RAM_END is word aligned) */
-  #define RAM_START (u32 *)0x20000000
-  #define RAM_END   (u32 *)0x20004FFc
+  #define RAM_START ((u32 *)(&__ICFEDIT_region_RAM_start__))
+  #define RAM_END   ((u32 *)((unsigned int)&__ICFEDIT_region_RAM_end__ - 3u))
 
-  /* Constants necessary for Transparent March tests */
+  /* Constants necessary for Transparent March tests */  
   #define CLASS_B_START ((u32 *)(&__ICFEDIT_region_CLASSB_start__))
   #define CLASS_B_END ((u32 *)(&__ICFEDIT_region_CLASSB_end__))
+
+
+
   
-  #define GotoCompilerStartUp() Reset_Handler();//__iar_program_start();
+  #define GotoCompilerStartUp() Reset_Handler(); /* __iar_program_start(); */
 
   #define REF_CRC16 __checksum
 #else

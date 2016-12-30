@@ -46,7 +46,7 @@ u16 g_u16CANSendFail = 0u;
 u16 g_u16CANSendSuccess = 0u;
 
 /* Esc receive data buffer */
-u8 EscDataFromSafetyBuffer[2][8];
+static u8 EscDataFromSafetyBuffer[2][8];
 
 /*******************************************************************************
 * Function Name  : CAN_Int_Init
@@ -94,16 +94,16 @@ u8 CAN_Int_Init(CAN_TypeDef* CANx)
         /*  non-time-triggered communication mode */
         CAN_InitStructure.CAN_TTCM=DISABLE;			
         /* automatic offline management software */
-        CAN_InitStructure.CAN_ABOM=DISABLE;				 
+        CAN_InitStructure.CAN_ABOM=ENABLE;				 
         /* wake-sleep mode via software (Clear CAN-> MCR's SLEEP bit) */
-        CAN_InitStructure.CAN_AWUM=DISABLE;			
+        CAN_InitStructure.CAN_AWUM=ENABLE;			
         /* message is automatically transferred, in accordance with the CAN standard, */
         /* CAN hardware failure when sending packets would have been automatic retransmission until sent successfully */
         CAN_InitStructure.CAN_NART=DISABLE;	
         /* message is not locked, the new over the old one */
         CAN_InitStructure.CAN_RFLM=DISABLE;		 	
         /* priority is determined by the packet identifier */
-        CAN_InitStructure.CAN_TXFP=DISABLE;			
+        CAN_InitStructure.CAN_TXFP=ENABLE;			
         CAN_InitStructure.CAN_Mode= CAN_Mode_Normal;	 
         
         /* set baud rate */
@@ -317,7 +317,7 @@ void CAN1_TX_IRQHandler(void)
         } 
         if( g_u16CANSendFail & 0x04u )
         {
-            result = Can_Send_Msg(CAN1, CAN1TX_DBL2_UPPER_ID2, &EscDataToSafety[2][0], CAN_FRAME_LEN ); 
+            result = Can_Send_Msg(CAN1, CAN1TX_DBL2_UPPER_ID3, &EscDataToSafety[2][0], CAN_FRAME_LEN ); 
             if( result )
             {
                 /* No mail box, send fail */
@@ -667,8 +667,8 @@ void Can_SetFilter(u16 CAN_Filter_ID1, u16 CAN_Filter_ID2)
     
     CAN_FilterInitStructure.CAN_FilterIdHigh = (u16)((((u32)CAN_Filter_ID1 << 3u) & 0xFFFF0000u ) >> 16u);	
     CAN_FilterInitStructure.CAN_FilterIdLow = (u16)((((u32)CAN_Filter_ID1 << 3u) | CAN_ID_EXT | CAN_RTR_DATA ) & 0xFFFFu);
-    CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (u16)(((((u32)(~( CAN_Filter_ID1 ^ CAN_Filter_ID2 ))) << 3u) & 0xFFFF0000u) >> 16u);
-    CAN_FilterInitStructure.CAN_FilterMaskIdLow = (u16)(((((u32)(~( CAN_Filter_ID1 ^ CAN_Filter_ID2 ))) << 3u) | CAN_ID_EXT | CAN_RTR_DATA ) & 0xFFFFu);   
+    CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (u16)(((((u32)(~( (u32)CAN_Filter_ID1 ^ (u32)CAN_Filter_ID2 ))) << 3u) & 0xFFFF0000u) >> 16u);
+    CAN_FilterInitStructure.CAN_FilterMaskIdLow = (u16)(((((u32)(~( (u32)(u32)CAN_Filter_ID1 ^ (u32)CAN_Filter_ID2 ))) << 3u) | CAN_ID_EXT | CAN_RTR_DATA ) & 0xFFFFu);   
     
     CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;
     CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;

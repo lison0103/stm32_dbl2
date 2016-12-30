@@ -22,8 +22,9 @@
 /* Exported functions ------------------------------------------------------- */
 void Communication_To_Safety(void);
 void Safety_Receive_Data_Process(void);
+#ifndef GEC_DBL2_SLAVE
 void Safety_Send_Data_Process(u8 respone);
-
+#endif
 
 #endif  /* __ESC_COMM_SAFETY_H */
 

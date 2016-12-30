@@ -12,6 +12,7 @@
 #include "delay.h"
 #include "ewdt.h"
 #include "esc_error_process.h"
+#include "config_test.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -20,7 +21,6 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-u8 iwdg_check_flag = 0;
 
 /*******************************************************************************
 * Function Name  : EWDT_Drv_pin_config
@@ -67,19 +67,19 @@ void EWDT_Drv_pin_config(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void write_bkp(u16 adr,u16 dat)
+void write_bkp(u32 adr,u32 dat)
 {
   PWR_BackupAccessCmd(ENABLE);
 #ifdef GEC_DBL2_SLAVE
   RTC_WriteBackupRegister(adr, dat);    
 #else
-  BKP_WriteBackupRegister(adr, dat);
+  BKP_WriteBackupRegister((u16)adr, (u16)dat);
 #endif   
-  PWR_BackupAccessCmd(DISABLE);
+  /*PWR_BackupAccessCmd(DISABLE);*/
 }
 
 /*******************************************************************************
-* Function Name  : ExtWdtCheck
+* Function Name  : ExternalWatchdogCheck
 * Description    : Check the external watchdog.
 *                  
 * Input          : None
@@ -87,17 +87,40 @@ void write_bkp(u16 adr,u16 dat)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ExtWdtCheck(void)
+void ExternalWatchdogCheck(void)
 {
-  u16 bkr_rst_flag=0;
-
-  if( iwdg_check_flag == 0 )
+    u32 iwdg_check_flag = 0u;
+    u8 u8EwdtError = 0u;
+    
+#ifdef GEC_DBL2_SLAVE    
+    u32 bkr_rst_flag = 0u;
+#else
+    u16 bkr_rst_flag = 0u;  
+#endif
+  
+#ifdef GEC_DBL2_SLAVE
+      iwdg_check_flag = RTC_ReadBackupRegister(RTC_BKP_DR2);
+#else
+      iwdg_check_flag = BKP_ReadBackupRegister(BKP_DR2);
+#endif
+  if( iwdg_check_flag == 0u )
   {
-      delay_ms(10); 
+      
+     /* Clear the init test error flag */
+#ifdef GEC_DBL2_SLAVE
+          write_bkp(RTC_BKP_DR3, 0u);  
+#else
+          write_bkp(BKP_DR3, 0u);
+#endif 
+          
+      RCC_Configuration_72M();
+      Delay_Init();
+      
+      delay_ms(10u); 
       EWDT_TOOGLE();
-      delay_ms(10);    
+      delay_ms(10u);    
       EWDT_TOOGLE();
-      delay_ms(10);    
+      delay_ms(10u);    
       EWDT_TOOGLE();
         
 #ifdef GEC_DBL2_SLAVE
@@ -105,56 +128,64 @@ void ExtWdtCheck(void)
 #else
       bkr_rst_flag = BKP_ReadBackupRegister(BKP_DR1);
 #endif
-      if(bkr_rst_flag == 0xfa01)
+      if(bkr_rst_flag == 0xfa01u)
       {
     /** soft reset **/
-//    if(RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)
-//    {
-//        
-//    }
-
+/*          
+    if(RCC_GetFlagStatus(RCC_FLAG_SFTRST) == SET)
+    {
+        
+    }
+*/
         /** pin reset **/
         if(RCC_GetFlagStatus(RCC_FLAG_PINRST) != SET)
         {
 #ifdef GEC_DBL2_SLAVE
-            write_bkp(RTC_BKP_DR1, 0);  
+            write_bkp(RTC_BKP_DR1, 0u);  
 #else
-            write_bkp(BKP_DR1, 0);
+            write_bkp(BKP_DR1, 0u);
 #endif  
             RCC_ClearFlag();   
-            EN_ERROR_SYS1 |= 0x01;
+            u8EwdtError = 0x01u;
         }   
       }  
       else
       {
 
 #ifdef GEC_DBL2_SLAVE
-          write_bkp(RTC_BKP_DR1, 0xfa01); 
+          write_bkp(RTC_BKP_DR1, 0xfa01u); 
 #else  
-          write_bkp(BKP_DR1, 0xfa01);  
+          write_bkp(BKP_DR1, 0xfa01u);  
 #endif  
           RCC_ClearFlag();
           
-          delay_ms(2000);    
+          delay_ms(2000u);    
           
-          EN_ERROR_SYS1 |= 0x01;
+          u8EwdtError = 0x01u;
       }  
       
 #ifdef GEC_DBL2_SLAVE
-      write_bkp(RTC_BKP_DR1, 0); 
+      write_bkp(RTC_BKP_DR1, 0u); 
 #else  
-      write_bkp(BKP_DR1, 0);  
+      write_bkp(BKP_DR1, 0u);  
 #endif  
       
-      if( EN_ERROR_SYS1&0x01 ) 
+      if( u8EwdtError == 1u ) 
       {
+/*          
           ESC_EWDT_Error_Process();
+*/
+     /* Reocrd the init test error */
+#ifdef GEC_DBL2_SLAVE
+          write_bkp(RTC_BKP_DR3, 1u);  
+#else
+          write_bkp(BKP_DR3, 1u);
+#endif           
       }
       
   }
   
-}  
-
+} 
 
 
 

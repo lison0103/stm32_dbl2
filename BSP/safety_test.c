@@ -3,6 +3,7 @@
 * Author             : lison
 * Version            : V1.0
 * Date               : 03/22/2016
+* Last modify date   : 09/07/2016
 * Description        : Contains the Self-test functions.
 *                      
 *******************************************************************************/
@@ -11,7 +12,6 @@
 #include "safety_test.h"
 #include "sys.h"
 #include "stm32f10x_STLlib.h"
-#include "stm32f10x_STLclassBvar.h"
 #include "initial_devices.h"
 
 #include "check_instruction.h"
@@ -26,11 +26,16 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+static void ConfigurationRegister_StartupCheck(void);
+static void ConfigurationRegister_RunCheck(void);
+static void FlagRegisterCheck(void);
+static void ProgramCounterCheck(void);
+static void ProgramExecutionInstructionCheck(void);
 
 /* variable is located in the stack */
-volatile type_testResult_t result = IEC61508_testFailed;   
-u32 SafetyTestFlowCnt = 0;
-u32 SafetyTestFlowCntInv = 0xFFFFFFFFuL;
+static volatile type_testResult_t result = IEC61508_testFailed;   
+static u32 SafetyTestFlowCnt = 0u;
+static u32 SafetyTestFlowCntInv = 0xFFFFFFFFuL;
 
 
 /*******************************************************************************
@@ -41,12 +46,14 @@ u32 SafetyTestFlowCntInv = 0xFFFFFFFFuL;
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void FailSafeTest(void)
+static void FailSafeTest(void)
 {
-    while(1)
-    {
-        NVIC_SystemReset();
-    }
+/*  
+  while(1)
+  {
+    NVIC_SystemReset();
+  }
+*/     
 }
     
 /*******************************************************************************
@@ -56,21 +63,24 @@ void FailSafeTest(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/  
-void ConfigurationRegister_StartupCheck(void)
+static void ConfigurationRegister_StartupCheck(void)
 {
-    SafetyTestFlowCnt += CONFIGURATION_REG_TEST_CALLER;
     RCC_ClocksTypeDef RCC_Clocks;
-    RCC_Configuration_8M();//HSE - 8MHz
+    SafetyTestFlowCnt += CONFIGURATION_REG_TEST_CALLER;
+    
+    RCC_Configuration_8M();
     RCC_GetClocksFreq(&RCC_Clocks); 
-    if (RCC_Clocks.SYSCLK_Frequency !=8000000)
+    if (RCC_Clocks.SYSCLK_Frequency != 8000000u)
     {
+        g_u32InitTestError = 1u;
         FailSafeTest();
     }
     
-    RCC_Configuration_72M(); //PLL - 72MHz
+    RCC_Configuration_72M(); 
     RCC_GetClocksFreq(&RCC_Clocks); 
-    if (RCC_Clocks.SYSCLK_Frequency !=72000000)
+    if (RCC_Clocks.SYSCLK_Frequency != 72000000u)
     {
+        g_u32InitTestError = 1u;
         FailSafeTest();
     }       
     
@@ -85,30 +95,36 @@ void ConfigurationRegister_StartupCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ConfigurationRegister_RunCheck(void)
+static void ConfigurationRegister_RunCheck(void)
 {
-    SafetyTestFlowCnt += CONFIGURATION_REG_TEST_CALLER;
-    
     RCC_ClocksTypeDef RCC_Clocks;
+    SafetyTestFlowCnt += CONFIGURATION_REG_TEST_CALLER;
+        
     RCC_GetClocksFreq(&RCC_Clocks); 
-    if (RCC_Clocks.SYSCLK_Frequency !=72000000)
+    if (RCC_Clocks.SYSCLK_Frequency != 72000000u)
     {
+        g_u16RunTestError = 1u;
         FailSafeTest();
     }
     /* Wait till PLL is used as system clock source */ 
-    if (RCC_GetSYSCLKSource() != 0x08) 
+    if (RCC_GetSYSCLKSource() != 0x08u ) 
     {
+        g_u16RunTestError = 1u;
         FailSafeTest();
     } 
     result = ConfigurationRegister_Check();
-//    if (result != IEC61508_testPassed)
-//    {
-//        FailSafeTest();                           
-//    }
-//    else
-//    {
+#if 0    
+    if (result != IEC61508_testPassed)
+    {
+        FailSafeTest();                           
+    }
+    else
+    {
         SafetyTestFlowCntInv -= CONFIGURATION_REG_TEST_CALLER;
-//    }  
+    }  
+#else    
+    SafetyTestFlowCntInv -= CONFIGURATION_REG_TEST_CALLER;
+#endif
 }
 
 /*******************************************************************************
@@ -118,7 +134,7 @@ void ConfigurationRegister_RunCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void FlagRegisterCheck(void)
+static void FlagRegisterCheck(void)
 {
     SafetyTestFlowCnt += FLAG_TEST_CALLER;
     result = flag_test();
@@ -139,7 +155,7 @@ void FlagRegisterCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ProgramCounterCheck(void)
+static void ProgramCounterCheck(void)
 {
     SafetyTestFlowCnt += PC_TEST_CALLER;
     result = IEC61508_PCTest_POST();
@@ -160,7 +176,7 @@ void ProgramCounterCheck(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void ProgramExecutionInstructionCheck(void)
+static void ProgramExecutionInstructionCheck(void)
 {
     SafetyTestFlowCnt += PEI_TEST_CALLER;
     /* Do the IEC61508 instruction tests */
@@ -184,7 +200,15 @@ void ProgramExecutionInstructionCheck(void)
 * Return         : None
 *******************************************************************************/
 void Safety_StartupCheck2(void)
-{       
+{    
+    /* Get the Safety_StartupCheck1 startup init test result */
+#ifdef GEC_DBL2_SLAVE
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR, ENABLE);
+    g_u32InitTestError = RTC_ReadBackupRegister(RTC_BKP_DR3);
+#else
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_BKP | RCC_APB1Periph_PWR, ENABLE );
+    g_u32InitTestError = BKP_ReadBackupRegister(BKP_DR3);
+#endif
              
       /*----------------------------------------------------------------------*/
       /*---------------------- Configuration registers -----------------------*/
@@ -208,11 +232,11 @@ void Safety_StartupCheck2(void)
        if (((SafetyTestFlowCnt ^ SafetyTestFlowCntInv) != 0xFFFFFFFFuL)
           ||(SafetyTestFlowCnt != CHECKCNT ))  
        {
-          FailSafeTest();
+           g_u32InitTestError = 1u;
        }
        else
        {
-           SafetyTestFlowCnt = 0;
+           SafetyTestFlowCnt = 0u;
            SafetyTestFlowCntInv = 0xFFFFFFFFuL;          
        }
         
@@ -227,53 +251,52 @@ void Safety_StartupCheck2(void)
 * Return         : None
 *******************************************************************************/
 void Safety_RunCheck2(void)
-{       
+{ 
+    
+    static u32 stat_u32CheckTimePeriod = 0u;
+    
+    stat_u32CheckTimePeriod++;
+    if( ( stat_u32CheckTimePeriod * 5u ) >= RUNCHECK_TIME_PERIOD )
+    {
+        stat_u32CheckTimePeriod = 0u;
         
-      /*----------------------------------------------------------------------*/
-      /*---------------------- Configuration registers -----------------------*/
-      /*----------------------------------------------------------------------*/  
-      ConfigurationRegister_RunCheck();            
+        /*----------------------------------------------------------------------*/
+        /*---------------------- Configuration registers -----------------------*/
+        /*----------------------------------------------------------------------*/  
+        ConfigurationRegister_RunCheck();            
         
-      /*----------------------------------------------------------------------*/
-      /*--------------------------- FLAG registers ---------------------------*/
-      /*----------------------------------------------------------------------*/
+        /*----------------------------------------------------------------------*/
+        /*--------------------------- FLAG registers ---------------------------*/
+        /*----------------------------------------------------------------------*/
         FlagRegisterCheck();
-
-      /*----------------------------------------------------------------------*/
-      /*------------------------------- PC Test ------------------------------*/
-      /*----------------------------------------------------------------------*/ 
-        ProgramCounterCheck();
-
-      /*----------------------------------------------------------------------*/
-      /*------------------- program execution instruction --------------------*/
-      /*------------------------- Accumulator Test ---------------------------*/
-      /*----------------------------------------------------------------------*/  
-        ProgramExecutionInstructionCheck();
-
-      /*----------------------------------------------------------------------*/
-      /*---------------- Check Safety routines Control flow  -----------------*/
-      /*----------------------------------------------------------------------*/        
-       if (((SafetyTestFlowCnt ^ SafetyTestFlowCntInv) != 0xFFFFFFFFuL)
-          ||(SafetyTestFlowCnt != CHECKCNTRUN ))  
-       {
-          FailSafeTest();
-       }
-       else
-       {
-           SafetyTestFlowCnt = 0;
-           SafetyTestFlowCntInv = 0xFFFFFFFFuL;          
-       }
         
-
+        /*----------------------------------------------------------------------*/
+        /*------------------------------- PC Test ------------------------------*/
+        /*----------------------------------------------------------------------*/ 
+        ProgramCounterCheck();
+        
+        /*----------------------------------------------------------------------*/
+        /*------------------- program execution instruction --------------------*/
+        /*------------------------- Accumulator Test ---------------------------*/
+        /*----------------------------------------------------------------------*/  
+        ProgramExecutionInstructionCheck();
+        
+        /*----------------------------------------------------------------------*/
+        /*---------------- Check Safety routines Control flow  -----------------*/
+        /*----------------------------------------------------------------------*/        
+        if (((SafetyTestFlowCnt ^ SafetyTestFlowCntInv) != 0xFFFFFFFFuL)
+            ||(SafetyTestFlowCnt != CHECKCNTRUN ))  
+        {
+            g_u16RunTestError = 1u;
+        }
+        else
+        {
+            SafetyTestFlowCnt = 0u;
+            SafetyTestFlowCntInv = 0xFFFFFFFFuL;          
+        }
+        
+    }
 }
 
 
 /******************************  END OF FILE  *********************************/
-
-
-
-
-
-
-
-

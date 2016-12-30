@@ -275,8 +275,8 @@ void ADC_InjectedInit(ADC_TypeDef* ADCx, ADC_InjectedInitTypeDef* ADC_InjectedIn
   */
 void ADC_InjectedStructInit(ADC_InjectedInitTypeDef* ADC_InjectedInitStruct)
 {
-  ADC_InjectedInitStruct->ADC_ExternalTrigInjecConvEvent = ADC_ExternalTrigInjecConvEvent_0;    
-  ADC_InjectedInitStruct->ADC_ExternalTrigInjecEventEdge = ADC_ExternalTrigInjecEventEdge_None;     
+  ADC_InjectedInitStruct->ADC_ExternalTrigInjecConvEvent = ADC_ExternalConvEvent_0;    
+  ADC_InjectedInitStruct->ADC_ExternalTrigInjecEventEdge = ADC_ExternalEventEdge_None;     
   ADC_InjectedInitStruct->ADC_NbrOfInjecChannel = 1;                                                             
   ADC_InjectedInitStruct->ADC_InjecSequence1 = ADC_InjectedChannel_1; 
   ADC_InjectedInitStruct->ADC_InjecSequence2 = ADC_InjectedChannel_1;

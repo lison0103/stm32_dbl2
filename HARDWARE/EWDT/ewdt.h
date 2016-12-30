@@ -18,16 +18,16 @@
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 #ifdef GEC_DBL2_MASTER
-#define EWDT_TOOGLE() 	GPIOA->ODR ^= 0X0001
+#define EWDT_TOOGLE() 	GPIOA->ODR ^= 0X0001u
 #else
 #define EWDT_TOOGLE() 	GPIOC->ODR ^= 0X0004u
 #endif
 
 /* Exported functions ------------------------------------------------------- */
-void ExtWdtCheck(void);
+void ExternalWatchdogCheck(void);
 void EWDT_Drv_pin_config(void);
+void write_bkp(u32 adr,u32 dat);
 
-extern u8 iwdg_check_flag;
 
 #endif  /* __EWDT_H */
 

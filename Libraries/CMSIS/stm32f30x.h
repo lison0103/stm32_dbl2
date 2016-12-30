@@ -1222,7 +1222,7 @@ typedef struct
 #define WWDG_BASE             (APB1PERIPH_BASE + 0x00002C00u)
 #define IWDG_BASE             (APB1PERIPH_BASE + 0x00003000u)
 #define I2S2ext_BASE          (APB1PERIPH_BASE + 0x00003400)
-#define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800)
+#define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800u)
 #define SPI3_BASE             (APB1PERIPH_BASE + 0x00003C00)
 #define I2S3ext_BASE          (APB1PERIPH_BASE + 0x00004000)
 #define USART2_BASE           (APB1PERIPH_BASE + 0x00004400)
@@ -1273,7 +1273,7 @@ typedef struct
 
 /*!< AHB1 peripherals */
 #define DMA1_BASE             (AHB1PERIPH_BASE + 0x00000000)
-#define DMA1_Channel1_BASE    (AHB1PERIPH_BASE + 0x00000008)
+#define DMA1_Channel1_BASE    (AHB1PERIPH_BASE + 0x00000008u)
 #define DMA1_Channel2_BASE    (AHB1PERIPH_BASE + 0x0000001Cu)
 #define DMA1_Channel3_BASE    (AHB1PERIPH_BASE + 0x00000030u)
 #define DMA1_Channel4_BASE    (AHB1PERIPH_BASE + 0x00000044)
@@ -1303,7 +1303,7 @@ typedef struct
 #define GPIOH_BASE            (AHB2PERIPH_BASE + 0x00001C00)
 
 /*!< AHB3 peripherals */
-#define ADC1_BASE             (AHB3PERIPH_BASE + 0x0000)
+#define ADC1_BASE             (AHB3PERIPH_BASE + 0x0000u)
 #define ADC2_BASE             (AHB3PERIPH_BASE + 0x0100)
 #define ADC1_2_BASE           (AHB3PERIPH_BASE + 0x0300)
 #define ADC3_BASE             (AHB3PERIPH_BASE + 0x0400)

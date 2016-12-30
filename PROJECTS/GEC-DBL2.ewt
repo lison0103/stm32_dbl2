@@ -2307,6 +2307,9 @@
       </file>
     </group>
     <configuration>
+      <name>GEC-DBL2-M</name>
+    </configuration>
+    <configuration>
       <name>GEC-DBL2-S</name>
     </configuration>
   </group>
@@ -2380,6 +2383,12 @@
       <file>
         <name>$PROJ_DIR$\..\SAFETYTEST\SelfTestLib\stm32f10x_STLtranspRamMx.c</name>
       </file>
+      <configuration>
+        <name>GEC-DBL2-M</name>
+      </configuration>
+      <configuration>
+        <name>GEC-DBL2-S</name>
+      </configuration>
     </group>
     <file>
       <name>$PROJ_DIR$\..\SAFETYTEST\check_instruction.c</name>

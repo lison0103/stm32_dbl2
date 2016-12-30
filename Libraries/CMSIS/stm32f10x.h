@@ -1297,7 +1297,7 @@ typedef struct
 #define RTC_BASE              (APB1PERIPH_BASE + 0x2800)
 #define WWDG_BASE             (APB1PERIPH_BASE + 0x2C00u)
 #define IWDG_BASE             (APB1PERIPH_BASE + 0x3000u)
-#define SPI2_BASE             (APB1PERIPH_BASE + 0x3800)
+#define SPI2_BASE             (APB1PERIPH_BASE + 0x3800u)
 #define SPI3_BASE             (APB1PERIPH_BASE + 0x3C00)
 #define USART2_BASE           (APB1PERIPH_BASE + 0x4400u)
 #define USART3_BASE           (APB1PERIPH_BASE + 0x4800u)
